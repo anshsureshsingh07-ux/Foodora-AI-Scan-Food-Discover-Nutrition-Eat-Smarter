@@ -1,0 +1,6 @@
+{
+  "name": "Fura AI 1.2 Flash",
+  "description": "Fura AI 1.2 Flash: Next-gen multimodal food, meal & nutritional intelligence platform. Features real-time AI recipe formulation, meal analysis, label OCR, food logging, and interactive culinary assistance. Actively under development.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
