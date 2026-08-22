@@ -79,7 +79,7 @@ export const HomeView: React.FC = () => {
               <div className="space-y-4">
                 <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100/90 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-extrabold shadow-xs">
                   <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                  <span>Fura AI 1.2 Flash • Multimodal Food Intelligence</span>
+                  <span>Nutrimania AI • Discover Food. Understand Nutrition.</span>
                 </div>
 
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 dark:text-white leading-[1.1] tracking-tight">
@@ -250,14 +250,14 @@ export const HomeView: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Ask Fura AI Assistant Box */}
+                  {/* Ask Nutrimania AI Assistant Box */}
                   <div
                     onClick={() => setIsAskDrawerOpen(true)}
                     className="bg-slate-800/90 hover:bg-slate-800 rounded-2xl p-4 border border-slate-700/80 cursor-pointer transition-all mb-6"
                   >
                     <div className="flex items-center gap-2 mb-1.5">
                       <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></div>
-                      <span className="text-xs font-bold uppercase text-slate-300">Ask Fura AI (1.2 Flash)</span>
+                      <span className="text-xs font-bold uppercase text-slate-300">Ask Nutrimania AI</span>
                     </div>
                     <p className="text-xs sm:text-sm text-slate-300 italic">
                       "This dish provides 35% of your daily recommended fiber and heart-healthy oleic acid. Would you like a breakdown of the seed variety detected?"
@@ -349,11 +349,11 @@ export const HomeView: React.FC = () => {
                 <span className="text-emerald-400">Nutritionally Calculated Recipes</span>
               </h2>
               <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
-                Got leftover avocado, chickpeas, spinach, or tofu? Tell Foodora AI your dietary restrictions (vegan, gluten-free, keto) and preferred cuisines. We'll generate step-by-step gourmet recipes with estimated calories, macros, and cooking timers.
+                Got leftover avocado, chickpeas, spinach, or tofu? Tell Nutrimania AI your dietary restrictions (vegan, gluten-free, keto) and preferred cuisines. We'll generate step-by-step gourmet recipes with estimated calories, macros, and cooking timers.
               </p>
               <div className="flex flex-wrap gap-2 pt-2 text-xs">
                 <span className="px-3 py-1 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-300">
-                  🌱 Vegan & Keto Ready
+                  🌱 Vegan &amp; Keto Ready
                 </span>
                 <span className="px-3 py-1 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-300">
                   ⏱️ Live Step Timers
@@ -396,7 +396,59 @@ export const HomeView: React.FC = () => {
         </div>
       </section>
 
-      {/* 3. HEALTH SCORE ALGORITHM EXPLAINER BANNER */}
+      {/* 3. FOUNDER & CREATOR FEATURED SHOWCASE */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
+        <div className="bg-gradient-to-br from-white via-slate-50 to-emerald-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-emerald-950/20 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-10 shadow-sm">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
+            <div className="space-y-4 max-w-2xl">
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80">
+                  Creator Spotlight
+                </span>
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  Author • Developer • Creator of Nutrimania
+                </span>
+              </div>
+
+              <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                Meet Ansh Singh
+              </h3>
+
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                <strong>Ansh Singh</strong> is an author, developer, and digital creator. He is the creator of <strong>Nutrimania</strong> and the author behind two fiction works: <em>The Lost Soul of Throne</em> and <em>Until Death Found Us Again</em>. His work combines storytelling, creativity, technology, and digital innovation to make food and nutrition information easier to explore and understand.
+              </p>
+
+              <div className="flex flex-wrap gap-2 text-xs font-bold pt-1">
+                <span className="px-3 py-1 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/60 text-amber-900 dark:text-amber-200">
+                  ✍️ Fiction Author
+                </span>
+                <span className="px-3 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800/60 text-indigo-900 dark:text-indigo-200">
+                  💻 Developer
+                </span>
+                <span className="px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-200">
+                  🚀 Digital Creator
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row lg:flex-col gap-3 w-full lg:w-auto flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => setCurrentView("about")}
+                className="px-6 py-3.5 bg-slate-900 hover:bg-slate-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm rounded-2xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap"
+              >
+                <span>View Founder Profile &amp; Fiction Works</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+              <div className="text-[11px] text-center text-slate-500 dark:text-slate-400 italic">
+                “Created, Designed &amp; Developed by Ansh Singh.”
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. HEALTH SCORE ALGORITHM EXPLAINER BANNER */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
         <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-10 text-white shadow-xl space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -405,10 +457,10 @@ export const HomeView: React.FC = () => {
                 Transparent Nutrition Methodology
               </span>
               <h3 className="text-2xl sm:text-3xl font-black">
-                How Foodora Calculates Health Scores (0 - 100)
+                How Nutrimania Calculates Health Scores (0 - 100)
               </h3>
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                Rather than penalizing foods with arbitrary points, Foodora evaluates nutrient density ratios, unrefined plant fibers, whole ingredient processing, and healthy fats.
+                Rather than penalizing foods with arbitrary points, Nutrimania evaluates nutrient density ratios, unrefined plant fibers, whole ingredient processing, and healthy fats.
               </p>
             </div>
 

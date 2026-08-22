@@ -628,7 +628,7 @@ export const RecipeGeneratorView: React.FC = () => {
               <div className="p-6 bg-slate-50 dark:bg-slate-850/60 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-3 text-xs text-slate-600 dark:text-slate-300">
                 <h4 className="font-extrabold text-slate-900 dark:text-white flex items-center gap-2 text-sm">
                   <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                  <span>How Foodora AI Recipes Work</span>
+                  <span>How Nutrimania AI Recipes Work</span>
                 </h4>
                 <ul className="space-y-2 leading-relaxed">
                   <li className="flex items-start gap-2">
@@ -652,7 +652,7 @@ export const RecipeGeneratorView: React.FC = () => {
                   <li className="flex items-start gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0" />
                     <span>
-                      <strong>1-Click Diary Logging:</strong> Log completed recipes directly to your Foodora AI daily nutrition goals.
+                      <strong>1-Click Diary Logging:</strong> Log completed recipes directly to your Nutrimania daily nutrition goals.
                     </span>
                   </li>
                 </ul>

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useFood } from "../../context/FoodContext";
-import { FoodItem, FoodScanCandidate, FoodScanAIResponse } from "../../types/food";
+import { FoodItem, FoodScanCandidate, FoodScanAIResponse, FoodAuraInfo } from "../../types/food";
+import { soundFx } from "../../utils/soundEffects";
 import {
   Camera,
   X,
@@ -15,7 +16,67 @@ import {
   Search,
   Check,
   HelpCircle,
+  Skull,
+  Zap,
+  Smile,
+  Frown,
+  Activity,
+  ArrowLeftRight,
 } from "lucide-react";
+import confetti from "canvas-confetti";
+
+// Helper function to generate Savage Food Roasts and Aura Matrix
+function calculateFoodAuraAndRoast(foodName: string, calories: number, proteinG: number, carbsG: number, fatG: number, healthScore: number, sugarG: number = 0): { aura: FoodAuraInfo; roast: string } {
+  let tier: FoodAuraInfo["tier"] = "Mid Vibe";
+  let emoji = "😐";
+  let glowColor = "from-amber-500/20 to-amber-900/10";
+  let auraDescription = "Decent fuel. Nothing revolutionary, but it keeps the motor running.";
+  let roast = `Bro ate ${foodName}. Definitely food of all time.`;
+
+  if (healthScore >= 88 && proteinG >= 15) {
+    tier = "God-Tier Glow Up";
+    emoji = "✨";
+    glowColor = "from-emerald-500/30 via-teal-500/20 to-indigo-500/20";
+    auraDescription = "Cellular radiance unlocked. Your mitochondria are throwing a victory parade.";
+    roast = `Bro is fueling like an absolute anime protagonist. +1,000,000 Aura. Clean macronutrient mastery! 👑✨`;
+  } else if (proteinG >= 25) {
+    tier = "Clean Gains Energy";
+    emoji = "💪";
+    glowColor = "from-blue-500/30 to-emerald-500/20";
+    auraDescription = "Hypertrophy fuel secured. Muscles replenished, recovery initiated.";
+    roast = `This meal has ${proteinG}g of protein, but make sure your soul drinks some water too 💧💪`;
+  } else if (carbsG > 70 && proteinG < 8) {
+    tier = "Down Bad Carb Slump";
+    emoji = "😴";
+    glowColor = "from-amber-500/30 to-orange-500/20";
+    auraDescription = "Insulin spike detected. Get ready for an aggressive afternoon nap.";
+    roast = `Bro is about to enter an irreversible 3-hour food coma. Say goodbye to your productivity 💀🛌`;
+  } else if (healthScore < 40 || (sugarG > 35 && proteinG < 5)) {
+    tier = "Straight to the ER 💀";
+    emoji = "💀";
+    glowColor = "from-rose-500/30 to-red-950/40";
+    auraDescription = "Biohazard zone. Your pancreas is currently typing a formal resignation letter.";
+    roast = `This has more refined sugar and sodium than a League of Legends lobby 🧂💀 Proceed with caution!`;
+  } else {
+    tier = "Mid Vibe";
+    emoji = "😐";
+    glowColor = "from-slate-500/20 to-slate-800/20";
+    auraDescription = "Baseline sustenance. Gets the job done, but won't grant superpowers.";
+    roast = `Standard NPC fuel. It does the job, but where is the culinary excitement? 🤷‍♂️`;
+  }
+
+  return {
+    aura: {
+      tier,
+      score: Math.min(100, Math.max(10, healthScore)),
+      title: tier,
+      emoji,
+      glowColor,
+      auraDescription,
+    },
+    roast,
+  };
+}
 
 export const ScanCameraModal: React.FC = () => {
   const {
@@ -669,6 +730,70 @@ export const ScanCameraModal: React.FC = () => {
                   <span className="font-bold text-teal-400">{resolvedFood.fiberG}g</span>
                 </div>
               </div>
+
+              {/* ⚡ Food Aura Matrix & Instant Savage Food Roaster 2.0 */}
+              {(() => {
+                const { aura, roast } = calculateFoodAuraAndRoast(
+                  resolvedFood.name,
+                  resolvedFood.calories,
+                  resolvedFood.proteinG,
+                  resolvedFood.carbsG,
+                  resolvedFood.fatG,
+                  resolvedFood.healthScore,
+                  resolvedFood.totalSugarG || 0
+                );
+                return (
+                  <div className="space-y-2 pt-1">
+                    {/* Food Aura Meter */}
+                    <div className="p-3 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-zinc-900 to-indigo-950/40 border border-emerald-500/30 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="text-2xl">{aura.emoji}</div>
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-400">
+                              Food Aura Matrix
+                            </span>
+                            <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                              {aura.score} pts
+                            </span>
+                          </div>
+                          <h4 className="text-xs font-black text-white">{aura.tier}</h4>
+                          <p className="text-[10px] text-zinc-300 line-clamp-1">{aura.auraDescription}</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          soundFx.playAuraChime();
+                          confetti({ particleCount: 40, spread: 60, origin: { y: 0.6 } });
+                        }}
+                        className="px-2.5 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-[11px] font-bold border border-emerald-500/40 transition-all active:scale-95 cursor-pointer shrink-0"
+                        title="Celebrate Aura"
+                      >
+                        Boost Aura ✨
+                      </button>
+                    </div>
+
+                    {/* Savage Roast Commentary */}
+                    <div className="p-3 rounded-2xl bg-zinc-950 border border-zinc-800 text-xs space-y-1">
+                      <div className="flex items-center justify-between text-zinc-400">
+                        <span className="flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider text-amber-400">
+                          <Flame className="w-3 h-3" />
+                          <span>Nutrimania Savage Roast &amp; Vibe Check</span>
+                        </span>
+                        <button
+                          onClick={() => soundFx.playRoastSizzle()}
+                          className="text-[10px] text-zinc-500 hover:text-zinc-300 transition-colors"
+                        >
+                          🔥 Re-cook
+                        </button>
+                      </div>
+                      <p className="text-xs text-zinc-200 font-medium italic leading-relaxed">
+                        “{scanResponse?.savageRoast || roast}”
+                      </p>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Multi-candidate Alternatives Chips (if AI generated top candidates) */}
               {scanResponse?.topCandidates && scanResponse.topCandidates.length > 1 && (

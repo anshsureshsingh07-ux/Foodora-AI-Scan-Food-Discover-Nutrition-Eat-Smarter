@@ -169,7 +169,7 @@ app.post("/api/gemini/scan-food", async (req: Request, res: Response) => {
     const { base64, mimeType } = await resolveImageInput(req.body);
     const { prompt, hintName } = req.body;
 
-    const promptText = prompt || `You are the lead AI Computer Vision Food Scientist at Foodora AI.
+    const promptText = prompt || `You are the lead AI Computer Vision Food Scientist at Nutrimania AI.
 Analyze this exact image carefully and thoroughly.
 
 CRITICAL INSTRUCTIONS:
@@ -398,7 +398,7 @@ app.post("/api/gemini/analyze-meal", async (req: Request, res: Response) => {
       }
     }
 
-    const promptText = `You are Fura AI's Multi-Item Meal Segmentation & Nutrition Intelligence engine (Fura AI 1.2 Flash).
+    const promptText = `You are Nutrimania AI's Multi-Item Meal Segmentation & Nutrition Intelligence engine (Nutrimania AI 1.2 Flash).
 Identify all individual components/items visible in this meal plate or described in: "${mealDescription || "the uploaded plate"}".
 For each item, estimate realistic portion sizes (volume/grams), confidence levels, and macro breakdown.
 Then calculate the combined aggregate meal total with uncertainty boundaries.
@@ -478,21 +478,39 @@ Return STRICT JSON matching:
   }
 });
 
-// 4. Ask Foodora AI Assistant (Conversational food science & nutrition Q&A)
+// 4. Ask Nutrimania AI Assistant (Conversational food science & nutrition Q&A)
 app.post("/api/gemini/ask-foodora", async (req: Request, res: Response) => {
   try {
-    const { messages, activeFoodContext } = req.body;
-    if (!messages || !Array.isArray(messages) || messages.length === 0) {
-      return res.status(400).json({ error: "Messages array is required" });
+    const { messages, query, history, activeFoodContext, isBrainrotMode } = req.body;
+
+    // Normalize messages format
+    let normalizedMessages: any[] = [];
+    if (Array.isArray(messages) && messages.length > 0) {
+      normalizedMessages = messages;
+    } else if (query) {
+      if (Array.isArray(history)) {
+        normalizedMessages = [...history, { role: "user", content: query }];
+      } else {
+        normalizedMessages = [{ role: "user", content: query }];
+      }
+    } else {
+      return res.status(400).json({ error: "Query or messages array is required" });
     }
 
-    const systemInstruction = `You are "Ask Fura AI", the intelligent, evidence-based AI assistant for Fura AI (Powered by Fura AI 1.2 Flash | Tagline: Scan. Understand. Eat Smarter.).
+    const baseSystemInstruction = isBrainrotMode
+      ? `You are "Nutrimania AI 2.0 (Gen-Z Brainrot Edition 🥦💀)", the savage, hilarious, yet scientifically accurate food & nutrition AI built by elite creator Ansh Singh.
+Your personality:
+- Use witty Gen-Z brainrot slang (Aura points +10,000 / -5,000, "bro cooked", "mewing nutrition", "skibidi gains", "gigachad macros", "NPC processed slop", "gyatt level protein", "fr fr no cap", "straight to the shadow realm").
+- Roast the user's food habits savagely when unhealthy, but hype them up massively when they eat high-fiber, clean whole foods and hit protein goals.
+- Crucially: Underneath the humorous Gen-Z brainrot exterior, YOUR NUTRITIONAL ADVICE MUST BE 100% REAL AND SCIENTIFICALLY ACCURATE (caloric density, amino acids, micronutrients, glycemic response).
+- Format with punchy markdown and emojis.`
+      : `You are "Ask Nutrimania AI", the intelligent, evidence-based AI assistant for Nutrimania (Powered by Nutrimania AI 1.2 Flash | Created by Ansh Singh | Tagline: Scan. Understand. Eat Smarter.).
 Your mission is to provide clear, friendly, and scientifically grounded food and nutrition intelligence.
 Key Guardrails & Guidelines:
 1. Avoid inventing unavailable nutritional data. Clearly differentiate verified lab/USDA data from estimates.
 2. When discussing meals or foods, explain uncertainty transparently (e.g. recipe variances, oil used, restaurant cooking styles).
-3. Do NOT diagnose diseases or replace registered dietitians or medical professionals. Always encourage consultation with certified dietitians for individual medical conditions (diabetes, kidney disease, severe allergies).
-4. Break down complex food science (e.g., glycemic index, additives, allergens, bio-availability of iron/curcumin, trans fats vs monounsaturated fats) into concise, engaging, easy-to-understand explanations.
+3. Do NOT diagnose diseases or replace registered dietitians or medical professionals. Always encourage consultation with certified dietitians for individual medical conditions.
+4. Break down complex food science (e.g., glycemic index, additives, allergens, bioavailability of iron, trans fats vs monounsaturated fats) into concise, engaging, easy-to-understand explanations.
 5. If the user mentions the currently viewed food item, incorporate the context provided.
 Format your responses with clean Markdown, bullet points, and high readability.`;
 
@@ -501,26 +519,27 @@ Format your responses with clean Markdown, bullet points, and high readability.`
       contextSnippet = `\n[User's Currently Inspected Food Context]:\nName: ${activeFoodContext.name}\nCalories: ${activeFoodContext.calories} kcal\nProtein: ${activeFoodContext.proteinG}g, Carbs: ${activeFoodContext.carbsG}g, Fat: ${activeFoodContext.fatG}g, Fiber: ${activeFoodContext.fiberG}g\nIngredients: ${JSON.stringify(activeFoodContext.ingredients || [])}\nHealth Score: ${activeFoodContext.healthScore}/100\n`;
     }
 
-    const lastUserMessage = messages[messages.length - 1]?.content || "";
-    const conversationHistory = messages.slice(0, -1).map((m: any) => `${m.role === "user" ? "User" : "Fura AI"}: ${m.content}`).join("\n");
+    const lastUserMessage = normalizedMessages[normalizedMessages.length - 1]?.content || "";
+    const conversationHistory = normalizedMessages.slice(0, -1).map((m: any) => `${m.role === "user" ? "User" : "Nutrimania AI"}: ${m.content}`).join("\n");
 
-    const fullPrompt = `${contextSnippet}\nConversation History:\n${conversationHistory}\n\nUser: ${lastUserMessage}\n\nFura AI:`;
+    const fullPrompt = `${contextSnippet}\nConversation History:\n${conversationHistory}\n\nUser: ${lastUserMessage}\n\nNutrimania AI:`;
 
     const text = await generateResilientContent({
       primaryModel: "gemini-3.1-flash-lite",
       fallbackModels: ["gemini-flash-latest", "gemini-3.7-flash"],
       contents: fullPrompt,
       config: {
-        systemInstruction,
-        temperature: 0.6,
+        systemInstruction: baseSystemInstruction,
+        temperature: isBrainrotMode ? 0.8 : 0.6,
       },
     });
 
-    res.json({ reply: text });
+    res.json({ reply: text, answer: text });
   } catch (error: any) {
     console.error("Error in /api/gemini/ask-foodora:", error);
     res.json({
       reply: `I'm analyzing your food query. While experiencing high server traffic, here is key guidance based on nutritional science: balanced meals pairing lean proteins, dietary fiber, and unsaturated fats support stable glycemic response and satiety. Feel free to re-ask or inspect specific dishes in our Global Database!`,
+      answer: `I'm analyzing your food query. While experiencing high server traffic, here is key guidance based on nutritional science: balanced meals pairing lean proteins, dietary fiber, and unsaturated fats support stable glycemic response and satiety. Feel free to re-ask or inspect specific dishes in our Global Database!`,
     });
   }
 });
@@ -533,7 +552,7 @@ app.post("/api/gemini/compare-foods", async (req: Request, res: Response) => {
       return res.status(400).json({ error: "At least 2 foods are required for comparison" });
     }
 
-    const prompt = `You are Fura AI's Comparative Nutrition & Dietary Intelligence System (Fura AI 1.2 Flash).
+    const prompt = `You are Nutrimania AI's Comparative Nutrition & Dietary Intelligence System (Nutrimania AI 1.2 Flash).
 Compare these foods in depth:
 ${JSON.stringify(foodList, null, 2)}
 
@@ -665,7 +684,7 @@ Return STRICT JSON matching schema:
   "confidenceScore": 90,
   "isVerified": false,
   "isAIEstimate": true,
-  "dataSource": "Foodora AI Global Nutrition Inference Engine"
+  "dataSource": "Nutrimania AI Global Nutrition Inference Engine"
 }`;
 
     const text = await generateResilientContent({
@@ -712,7 +731,7 @@ app.post("/api/gemini/generate-recipes", async (req: Request, res: Response) => 
       ? cuisinePreferences.join(", ")
       : "Open to any wholesome global cuisine";
 
-    const prompt = `You are Fura AI's Master Culinary Nutritionist & Computational Recipe Engine (Fura AI 1.2 Flash).
+    const prompt = `You are Nutrimania AI's Master Culinary Nutritionist & Computational Recipe Engine (Nutrimania AI 1.2 Flash).
 Generate ${recipeCount} distinct, complete, delicious recipes strictly honoring the following criteria:
 
 - Available / Provided Ingredients: ${ingredientsListStr}
@@ -1148,7 +1167,7 @@ function formulateHeuristicGlobalFood(query: string, regionHint?: string, cuisin
     description: `Authentic ${cuisine} dish (${q}) recognized for its balanced flavor, wholesome ingredients, and cultural gastronomy.`,
     confidenceScore: 94,
     isVerified: true,
-    dataSource: "Fura AI Global Food Intelligence (ICMR / USDA Grounded)",
+    dataSource: "Nutrimania AI Global Food Intelligence (ICMR / USDA Grounded)",
     lastVerifiedDate: new Date().toISOString().split("T")[0],
     originCountry: country,
   };
@@ -1162,7 +1181,7 @@ app.post("/api/food/global-resolve", async (req: Request, res: Response) => {
   }
 
   try {
-    const prompt = `You are the lead Food Science & Computational Gastronomy Master for Fura AI's Global Food Knowledge System (Fura AI 1.2 Flash).
+    const prompt = `You are the lead Food Science & Computational Gastronomy Master for Nutrimania AI's Global Food Knowledge System (Nutrimania AI 1.2 Flash).
 A user is searching for or logging the food/dish: "${query}"${regionHint ? ` in region: "${regionHint}"` : ""}${cuisineHint ? ` with cuisine: "${cuisineHint}"` : ""}.
 
 Analyze and formulate a verified, comprehensive food record adhering to international nutritional standards (USDA FoodData Central / ICMR-NIN / EFSA).
@@ -1268,7 +1287,7 @@ Return a STRICT JSON matching this schema:
   "description": "Culinary and nutritional description.",
   "confidenceScore": 97,
   "isVerified": true,
-  "dataSource": "Fura AI Global Food Intelligence (ICMR / USDA Grounded)",
+  "dataSource": "Nutrimania AI Global Food Intelligence (ICMR / USDA Grounded)",
   "lastVerifiedDate": "${new Date().toISOString().split("T")[0]}",
   "originCountry": "Country Name"
 }`;
@@ -1300,7 +1319,7 @@ app.post("/api/food/disambiguate", async (req: Request, res: Response) => {
   }
 
   try {
-    const prompt = `You are Fura AI's Dish Disambiguation Specialist (Fura AI 1.2 Flash).
+    const prompt = `You are Nutrimania AI's Dish Disambiguation Specialist (Nutrimania AI 1.2 Flash).
 The user mentioned the dish: "${dishName}".
 Because the exact same dish can vary wildly between Home-Cooked, Restaurant/Dhaba, Street-Food, Packaged/RTE, and specific Regional styles, generate 4 distinct preparation versions so the user can accurately pick: "Which one did you eat?".
 
@@ -1464,7 +1483,7 @@ async function startServer() {
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Foodora AI Server running on http://0.0.0.0:${PORT}`);
+    console.log(`Nutrimania AI Server running on http://0.0.0.0:${PORT}`);
   });
 }
 

@@ -3,6 +3,8 @@ import { FoodItem, FoodVariationOption, MealType } from "../../types/food";
 import { useFood } from "../../context/FoodContext";
 import { NutritionTable } from "../common/NutritionTable";
 import { HealthScoreBadge } from "../common/HealthScoreBadge";
+import { soundFx } from "../../utils/soundEffects";
+import confetti from "canvas-confetti";
 import {
   X,
   ShieldCheck,
@@ -25,15 +27,25 @@ import {
   ChefHat,
   Compass,
   Languages,
+  Copy,
+  Check,
+  Sliders,
+  Activity,
+  ArrowRight,
+  TrendingDown,
+  Zap,
 } from "lucide-react";
 
 interface FoodDetailModalProps {
-  food: FoodItem | null;
-  onClose: () => void;
+  food?: FoodItem | null;
+  onClose?: () => void;
 }
 
-export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({ food, onClose }) => {
+export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({ food: propFood, onClose: propOnClose }) => {
   const {
+    activeFoodDetail,
+    setActiveFoodDetail,
+    foodDatabase,
     toggleFavorite,
     isFavorite,
     addToCompare,
@@ -44,11 +56,16 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({ food, onClose 
     addChatMessage,
   } = useFood();
 
+  const food = propFood !== undefined ? propFood : activeFoodDetail;
+  const onClose = propOnClose || (() => setActiveFoodDetail(null));
+
   const [servingMultiplier, setServingMultiplier] = useState(1);
+  const [customGrams, setCustomGrams] = useState<number>(() => food?.servingWeightGrams || 100);
   const [selectedMealType, setSelectedMealType] = useState<MealType>("Lunch");
   const [isLoggedSuccess, setIsLoggedSuccess] = useState(false);
+  const [isCopiedSuccess, setIsCopiedSuccess] = useState(false);
   const [selectedVariation, setSelectedVariation] = useState<FoodVariationOption | null>(null);
-  const [nutritionTab, setNutritionTab] = useState<"serving" | "100g">("serving");
+  const [nutritionTab, setNutritionTab] = useState<"serving" | "custom" | "100g">("serving");
 
   if (!food) return null;
 
@@ -56,37 +73,85 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({ food, onClose 
   const isCompared = comparisonItems.some((f) => f.id === food.id);
 
   // Compute active nutritional numbers based on selected recipe variation if chosen
+  const baseGrams = food.servingWeightGrams || 100;
   const activeCalories = selectedVariation ? selectedVariation.calories : food.calories;
   const activeProtein = selectedVariation ? selectedVariation.proteinG : food.proteinG;
   const activeCarbs = selectedVariation ? selectedVariation.carbsG : food.carbsG;
   const activeFat = selectedVariation ? selectedVariation.fatG : food.fatG;
   const activeHealthScore = selectedVariation ? selectedVariation.healthScore : food.healthScore;
-  const activeServingTitle = selectedVariation ? `${food.servingSize} (${selectedVariation.variationName})` : food.servingSize;
+
+  // Gram scaling factor for Custom slider mode
+  const gramRatio = customGrams / (baseGrams || 100);
+
+  // Glycemic index approximation based on carbs/fiber/category
+  const giValue = food.glycemicIndex || (food.carbsG > 30 ? (food.fiberG > 5 ? 45 : 68) : (food.carbsG > 10 ? 35 : 15));
+  const giCategory = giValue < 55 ? "Low GI (Steady Energy)" : giValue < 70 ? "Medium GI" : "High GI (Fast Glucose Release)";
+  const giColor = giValue < 55 ? "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-800" : giValue < 70 ? "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 border-amber-300 dark:border-amber-800" : "text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 border-rose-300 dark:border-rose-800";
+
+  // Find 2-3 healthier alternatives from database in same category
+  const healthyAlternatives = foodDatabase
+    .filter((f) => f.category === food.category && f.id !== food.id && f.healthScore >= food.healthScore)
+    .sort((a, b) => b.healthScore - a.healthScore)
+    .slice(0, 3);
 
   const handleLogToDiary = () => {
+    const finalMultiplier = nutritionTab === "custom" ? gramRatio : servingMultiplier;
+    const finalGrams = nutritionTab === "custom" ? customGrams : Math.round(baseGrams * servingMultiplier);
+
     logFood({
       foodId: food.id,
       foodName: selectedVariation ? `${food.name} [${selectedVariation.variationName}]` : food.name,
       category: food.category,
       mealType: selectedMealType,
       imageUrl: food.imageUrl,
-      servings: servingMultiplier,
-      grams: Math.round(food.servingWeightGrams * servingMultiplier),
-      calories: Math.round(activeCalories * servingMultiplier),
-      proteinG: Number((activeProtein * servingMultiplier).toFixed(1)),
-      carbsG: Number((activeCarbs * servingMultiplier).toFixed(1)),
-      fatG: Number((activeFat * servingMultiplier).toFixed(1)),
-      fiberG: Number((food.fiberG * servingMultiplier).toFixed(1)),
+      servings: Number(finalMultiplier.toFixed(2)),
+      grams: finalGrams,
+      calories: Math.round(activeCalories * finalMultiplier),
+      proteinG: Number((activeProtein * finalMultiplier).toFixed(1)),
+      carbsG: Number((activeCarbs * finalMultiplier).toFixed(1)),
+      fatG: Number((activeFat * finalMultiplier).toFixed(1)),
+      fiberG: Number((food.fiberG * finalMultiplier).toFixed(1)),
       healthScore: activeHealthScore,
     });
+
+    soundFx.playSuccess();
+
+    try {
+      confetti({
+        particleCount: 50,
+        spread: 60,
+        origin: { y: 0.8 },
+        colors: ["#10b981", "#3b82f6", "#f59e0b", "#ec4899"],
+      });
+    } catch {}
+
     setIsLoggedSuccess(true);
     setTimeout(() => setIsLoggedSuccess(false), 2500);
   };
 
-  const handleAskAboutThisFood = () => {
+  const handleCopyNutritionMarkdown = () => {
+    const text = `### 🥗 ${food.name} - Nutrition Facts
+- **Category**: ${food.category} (${food.cuisine || "Global"})
+- **Serving**: ${food.servingSize} (${baseGrams}g)
+- **Calories**: ${activeCalories} kcal
+- **Protein**: ${activeProtein}g
+- **Carbs**: ${activeCarbs}g (Fiber: ${food.fiberG}g, Sugar: ${food.sugarG || 0}g)
+- **Fat**: ${activeFat}g (Sat Fat: ${food.saturatedFatG || 0}g)
+- **Health Score**: ${activeHealthScore}/100
+- **GI**: ${giValue} (${giCategory})
+- *Verified by Nutrimania AI*`;
+
+    navigator.clipboard.writeText(text);
+    soundFx.playPop();
+    setIsCopiedSuccess(true);
+    setTimeout(() => setIsCopiedSuccess(false), 2000);
+  };
+
+  const handleAskAboutThisFood = (prompt?: string) => {
+    soundFx.playPop();
     addChatMessage({
       role: "user",
-      content: `Can you explain the nutritional benefits, regional authentic variations, and ingredient quality of ${food.name}?`,
+      content: prompt || `Can you explain the nutritional benefits, regional authentic variations, and ingredient quality of ${food.name}?`,
       foodContext: food,
     });
     setIsAskDrawerOpen(true);
@@ -213,6 +278,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({ food, onClose 
             <div className="flex items-center gap-2">
               <button
                 onClick={() => {
+                  soundFx.playPop();
                   if (isCompared) removeFromCompare(food.id);
                   else addToCompare(food);
                 }}
@@ -227,7 +293,10 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({ food, onClose 
               </button>
 
               <button
-                onClick={() => toggleFavorite(food.id)}
+                onClick={() => {
+                  soundFx.playPop();
+                  toggleFavorite(food.id);
+                }}
                 className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
                   isFav
                     ? "bg-rose-50 dark:bg-rose-950 border-rose-300 text-rose-600"
@@ -239,16 +308,38 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({ food, onClose 
               </button>
 
               <button
-                onClick={handleAskAboutThisFood}
+                onClick={handleCopyNutritionMarkdown}
+                className="p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+                title="Copy Nutrition Facts Markdown"
+              >
+                {isCopiedSuccess ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+              </button>
+
+              <button
+                onClick={() => handleAskAboutThisFood()}
                 className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 hover:bg-emerald-200 dark:hover:bg-emerald-900 transition-all cursor-pointer"
               >
                 <MessageSquare className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span>Ask Fura AI</span>
+                <span>Ask AI</span>
               </button>
             </div>
           </div>
 
-          {/* DISAMBIGUATION SECTION: "We found multiple versions of this dish. Which one did you eat?" */}
+          {/* Glycemic Index & Glucose Impact Pill */}
+          <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs">
+            <div className="flex items-center gap-2.5">
+              <Activity className="w-4 h-4 text-emerald-500" />
+              <div>
+                <span className="font-bold text-slate-900 dark:text-white">Glycemic Index & Energy Impact: </span>
+                <span className="text-slate-500 dark:text-slate-400">GI Score {giValue}</span>
+              </div>
+            </div>
+            <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${giColor}`}>
+              {giCategory}
+            </span>
+          </div>
+
+          {/* DISAMBIGUATION SECTION */}
           {food.recipeVariations && food.recipeVariations.length > 0 && (
             <div className="bg-gradient-to-br from-indigo-50/70 to-purple-50/50 dark:from-indigo-950/40 dark:to-purple-950/30 p-5 rounded-2xl border border-indigo-200/80 dark:border-indigo-800/60 space-y-3">
               <div className="flex items-center justify-between">
@@ -261,7 +352,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({ food, onClose 
                 {selectedVariation && (
                   <button
                     onClick={() => setSelectedVariation(null)}
-                    className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+                    className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
                   >
                     Reset to Default
                   </button>
@@ -383,26 +474,37 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({ food, onClose 
             </div>
           </div>
 
-          {/* Nutrition Table with Per 100g vs Per Serving Switcher */}
+          {/* Nutrition Table with Per 100g vs Per Serving vs Custom Gram Slider Switcher */}
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 className="font-bold text-slate-900 dark:text-white text-base">
                 Nutritional Breakdown
               </h3>
               <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
                 <button
                   onClick={() => setNutritionTab("serving")}
-                  className={`px-3 py-1 rounded-lg transition-all ${
+                  className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
                     nutritionTab === "serving"
                       ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs"
                       : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
                   }`}
                 >
-                  Per Serving ({food.servingWeightGrams || 100}g)
+                  Serving ({baseGrams}g)
+                </button>
+                <button
+                  onClick={() => setNutritionTab("custom")}
+                  className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
+                    nutritionTab === "custom"
+                      ? "bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs"
+                      : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                  }`}
+                >
+                  <Sliders className="w-3 h-3" />
+                  <span>Custom Grams</span>
                 </button>
                 <button
                   onClick={() => setNutritionTab("100g")}
-                  className={`px-3 py-1 rounded-lg transition-all ${
+                  className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
                     nutritionTab === "100g"
                       ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs"
                       : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
@@ -412,6 +514,43 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({ food, onClose 
                 </button>
               </div>
             </div>
+
+            {/* Custom Interactive Grams Slider */}
+            {nutritionTab === "custom" && (
+              <div className="p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 space-y-3 animate-in fade-in">
+                <div className="flex items-center justify-between text-xs font-bold text-emerald-900 dark:text-emerald-300">
+                  <span>Interactive Portion Weight:</span>
+                  <span className="text-sm font-extrabold bg-white dark:bg-slate-900 px-3 py-1 rounded-lg border border-emerald-300 dark:border-emerald-700">
+                    {customGrams} grams
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="25"
+                  max="800"
+                  step="5"
+                  value={customGrams}
+                  onChange={(e) => setCustomGrams(Number(e.target.value))}
+                  className="w-full h-2 bg-emerald-200 dark:bg-emerald-800 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                />
+                <div className="flex items-center justify-between gap-2 pt-1">
+                  {[50, 100, 150, 250, 400].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setCustomGrams(preset)}
+                      className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${
+                        customGrams === preset
+                          ? "bg-emerald-600 text-white border-emerald-600"
+                          : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700"
+                      }`}
+                    >
+                      {preset}g
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {nutritionTab === "serving" ? (
               <NutritionTable
@@ -425,31 +564,60 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({ food, onClose 
                 servingMultiplier={servingMultiplier}
                 onMultiplierChange={setServingMultiplier}
               />
+            ) : nutritionTab === "custom" ? (
+              <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                  <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Energy</span>
+                    <span className="text-base font-extrabold text-slate-900 dark:text-white">
+                      {Math.round(activeCalories * gramRatio)} kcal
+                    </span>
+                  </div>
+                  <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <span className="text-[10px] uppercase font-bold text-emerald-500 block">Protein</span>
+                    <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400">
+                      {(activeProtein * gramRatio).toFixed(1)}g
+                    </span>
+                  </div>
+                  <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <span className="text-[10px] uppercase font-bold text-amber-500 block">Carbs</span>
+                    <span className="text-base font-extrabold text-amber-600 dark:text-amber-400">
+                      {(activeCarbs * gramRatio).toFixed(1)}g
+                    </span>
+                  </div>
+                  <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <span className="text-[10px] uppercase font-bold text-rose-500 block">Fat</span>
+                    <span className="text-base font-extrabold text-rose-600 dark:text-rose-400">
+                      {(activeFat * gramRatio).toFixed(1)}g
+                    </span>
+                  </div>
+                </div>
+              </div>
             ) : (
               <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
                   <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">Energy</span>
                     <span className="text-base font-extrabold text-slate-900 dark:text-white">
-                      {food.per100g ? food.per100g.calories : Math.round((food.calories / (food.servingWeightGrams || 100)) * 100)} kcal
+                      {food.per100g ? food.per100g.calories : Math.round((food.calories / baseGrams) * 100)} kcal
                     </span>
                   </div>
                   <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
                     <span className="text-[10px] uppercase font-bold text-emerald-500 block">Protein</span>
                     <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400">
-                      {food.per100g ? food.per100g.proteinG : ((food.proteinG / (food.servingWeightGrams || 100)) * 100).toFixed(1)}g
+                      {food.per100g ? food.per100g.proteinG : ((food.proteinG / baseGrams) * 100).toFixed(1)}g
                     </span>
                   </div>
                   <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
                     <span className="text-[10px] uppercase font-bold text-amber-500 block">Carbs</span>
                     <span className="text-base font-extrabold text-amber-600 dark:text-amber-400">
-                      {food.per100g ? food.per100g.carbsG : ((food.carbsG / (food.servingWeightGrams || 100)) * 100).toFixed(1)}g
+                      {food.per100g ? food.per100g.carbsG : ((food.carbsG / baseGrams) * 100).toFixed(1)}g
                     </span>
                   </div>
                   <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
                     <span className="text-[10px] uppercase font-bold text-rose-500 block">Fat</span>
                     <span className="text-base font-extrabold text-rose-600 dark:text-rose-400">
-                      {food.per100g ? food.per100g.fatG : ((food.fatG / (food.servingWeightGrams || 100)) * 100).toFixed(1)}g
+                      {food.per100g ? food.per100g.fatG : ((food.fatG / baseGrams) * 100).toFixed(1)}g
                     </span>
                   </div>
                 </div>
@@ -458,6 +626,74 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({ food, onClose 
                 </p>
               </div>
             )}
+          </div>
+
+          {/* Healthy Swaps & Alternatives */}
+          {healthyAlternatives.length > 0 && (
+            <div className="bg-emerald-50/70 dark:bg-emerald-950/30 p-4 rounded-2xl border border-emerald-200 dark:border-emerald-800 space-y-3">
+              <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300">
+                <Zap className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <h4 className="font-bold text-xs uppercase tracking-wider">
+                  Healthier Food Alternatives in {food.category}
+                </h4>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                {healthyAlternatives.map((alt) => (
+                  <div
+                    key={alt.id}
+                    onClick={() => {
+                      soundFx.playPop();
+                      setActiveFoodDetail(alt);
+                    }}
+                    className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-emerald-200/80 dark:border-emerald-800/80 hover:border-emerald-500 cursor-pointer transition-all"
+                  >
+                    <img
+                      src={alt.imageUrl}
+                      alt={alt.name}
+                      className="w-9 h-9 rounded-lg object-cover flex-shrink-0"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <span className="font-bold text-xs text-slate-900 dark:text-white truncate block">
+                        {alt.name}
+                      </span>
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold block">
+                        HS {alt.healthScore}/100 • {alt.calories} kcal
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Quick AI Question Chips */}
+          <div className="space-y-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
+              Ask Nutrimania AI instant questions:
+            </span>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => handleAskAboutThisFood(`Is ${food.name} suitable for a high-protein bodybuilding or weight loss diet?`)}
+                className="px-3 py-1.5 rounded-xl text-xs bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950 hover:text-emerald-600 text-slate-700 dark:text-slate-300 font-medium border border-slate-200 dark:border-slate-700 transition-all cursor-pointer"
+              >
+                🏋️ Good for muscle building / weight loss?
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAskAboutThisFood(`How does ${food.name} affect blood glucose and insulin levels?`)}
+                className="px-3 py-1.5 rounded-xl text-xs bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950 hover:text-emerald-600 text-slate-700 dark:text-slate-300 font-medium border border-slate-200 dark:border-slate-700 transition-all cursor-pointer"
+              >
+                🩺 Blood sugar & diabetic safety?
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAskAboutThisFood(`What are the healthiest ingredients or cooking techniques to prepare ${food.name}?`)}
+                className="px-3 py-1.5 rounded-xl text-xs bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950 hover:text-emerald-600 text-slate-700 dark:text-slate-300 font-medium border border-slate-200 dark:border-slate-700 transition-all cursor-pointer"
+              >
+                🍳 Healthiest way to cook this?
+              </button>
+            </div>
           </div>
 
           {/* Primary & Optional Ingredients */}
@@ -535,7 +771,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({ food, onClose 
                 Data Source & Verification:
               </span>
               <span className="font-bold text-slate-900 dark:text-white">
-                {food.dataSource || "Fura AI Global Food Knowledge Benchmark"}
+                {food.dataSource || "Nutrimania AI Global Food Knowledge Benchmark"}
               </span>
             </div>
             {food.lastVerifiedDate && (
@@ -558,8 +794,10 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({ food, onClose 
                 <span className="text-xs text-slate-400 block">
                   Log to Daily Food Diary {selectedVariation && `(${selectedVariation.variationName})`}:
                 </span>
-                <span className="font-bold text-base">
-                  {Math.round(activeCalories * servingMultiplier)} kcal ({servingMultiplier}x portion)
+                <span className="font-bold text-base text-emerald-400">
+                  {nutritionTab === "custom"
+                    ? `${Math.round(activeCalories * gramRatio)} kcal (${customGrams}g portion)`
+                    : `${Math.round(activeCalories * servingMultiplier)} kcal (${servingMultiplier}x portion)`}
                 </span>
               </div>
 
@@ -567,7 +805,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({ food, onClose 
               <select
                 value={selectedMealType}
                 onChange={(e) => setSelectedMealType(e.target.value as MealType)}
-                className="bg-slate-800 dark:bg-slate-700 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                className="bg-slate-800 dark:bg-slate-700 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:ring-1 focus:ring-emerald-400 cursor-pointer"
               >
                 <option value="Breakfast">Breakfast</option>
                 <option value="Lunch">Lunch</option>
@@ -586,8 +824,9 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({ food, onClose 
           </div>
 
           {isLoggedSuccess && (
-            <div className="bg-emerald-600 text-white p-3 rounded-xl text-center text-xs font-bold animate-in fade-in">
-              ✓ Successfully logged to Today's {selectedMealType}!
+            <div className="bg-emerald-600 text-white p-3 rounded-xl text-center text-xs font-bold animate-in fade-in flex items-center justify-center gap-2 shadow-lg">
+              <CheckCircle2 className="w-4 h-4" />
+              <span>Successfully logged to Today's {selectedMealType}! Check your Dashboard to see your macro progress.</span>
             </div>
           )}
         </div>
@@ -595,4 +834,5 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({ food, onClose 
     </div>
   );
 };
+
 

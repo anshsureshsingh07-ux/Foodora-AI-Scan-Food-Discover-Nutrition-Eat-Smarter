@@ -272,7 +272,7 @@ export const MealAnalyzerView: React.FC = () => {
               Select or Upload a Meal Photo
             </h3>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-              Foodora Gemini Multimodal will automatically detect individual ingredients, estimate volume in grams, and compute individual and aggregate macro breakdown.
+              Nutrimania AI Multimodal Plate Vision will automatically detect individual ingredients, estimate volume in grams, and compute individual and aggregate macro breakdown.
             </p>
           </div>
         </div>

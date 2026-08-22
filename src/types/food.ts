@@ -268,6 +268,39 @@ export interface FoodScanCandidate {
   estimatedCalories?: number;
 }
 
+export interface FoodAuraInfo {
+  tier: "God-Tier Glow Up" | "Clean Gains Energy" | "Mid Vibe" | "Down Bad Carb Slump" | "Straight to the ER 💀";
+  score: number; // 0 - 100
+  title: string;
+  emoji: string;
+  glowColor: string;
+  auraDescription: string;
+}
+
+export interface FoodSwapRecommendation {
+  originalFood: string;
+  betterAlternative: string;
+  whyBetter: string;
+  calorieDifference: number;
+  proteinBoost: number;
+  healthScoreBoost: number;
+  icon: string;
+}
+
+export interface DailyQuest {
+  id: string;
+  title: string;
+  description: string;
+  targetCount: number;
+  currentCount: number;
+  unit: string;
+  category: "hydration" | "fiber" | "protein" | "variety" | "streak" | "mindfulness";
+  rewardAuraPoints: number;
+  rewardAuraTier?: string;
+  isCompleted: boolean;
+  badgeEmoji: string;
+}
+
 export interface FoodScanAIResponse {
   isFoodDetected: boolean;
   foodName?: string;
@@ -293,6 +326,9 @@ export interface FoodScanAIResponse {
   vitaminsAndMinerals?: Micronutrient[];
   healthScore?: number;
   healthScoreFactors?: HealthScoreFactors;
+  foodAura?: FoodAuraInfo;
+  savageRoast?: string;
+  ghibliLore?: string;
   ingredients?: IngredientItem[];
   allergens?: string[];
   additivesAndPreservatives?: AdditiveInfo[];
@@ -382,7 +418,7 @@ export interface CommunitySubmission {
   moderatorNotes?: string;
 }
 
-export interface FoodoraPartner {
+export interface NutrimaniaPartner {
   id: string;
   name: string;
   category: "Food Brand" | "Restaurant / Café" | "Grocery Retailer" | "Nutrition & Research" | "Fitness Platform";
@@ -396,6 +432,8 @@ export interface FoodoraPartner {
   isVerified: boolean;
   labTestedCertificates?: string[];
 }
+
+export type FoodoraPartner = NutrimaniaPartner;
 
 export interface AnimeCollaborationStory {
   id: string;
@@ -489,6 +527,8 @@ export interface GeneratedRecipe {
   instructions: RecipeInstructionStep[];
   chefTips: string[];
   nutritionHighlights: string[];
+  ghibliLore?: string;
+  foodStory?: string;
   flavorProfile: {
     savory: number;
     sweet: number;
@@ -509,4 +549,18 @@ export interface RecipeGenerationParams {
   skillLevel?: "Easy" | "Medium" | "Advanced";
   servings?: number;
   additionalNotes?: string;
+}
+
+export type FoodAuraTier =
+  | "God-Tier Glow Up"
+  | "Clean Gains Energy"
+  | "Balanced Mid"
+  | "Ultra-Processed Slop"
+  | "NPC Malnutrition Mode";
+
+export interface FoodAuraScore {
+  points: number;
+  tier: FoodAuraTier;
+  savageRoast: string;
+  badgeEmoji: string;
 }

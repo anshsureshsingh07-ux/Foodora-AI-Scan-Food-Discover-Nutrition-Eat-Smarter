@@ -1,4 +1,4 @@
-import { FoodItem, FoodoraPartner, CommunitySubmission, AnimeCollaborationStory, AnimeFoodStory } from "../types/food";
+import { FoodItem, NutrimaniaPartner, CommunitySubmission, AnimeCollaborationStory, AnimeFoodStory } from "../types/food";
 
 export const SAMPLE_FOOD_DATABASE: FoodItem[] = [
   // --- FRUITS ---
@@ -1553,8 +1553,8 @@ export const SAMPLE_FOOD_DATABASE: FoodItem[] = [
   },
 ];
 
-// Foodora Partners
-export const SAMPLE_PARTNERS: FoodoraPartner[] = [
+// Nutrimania Partners
+export const SAMPLE_PARTNERS: NutrimaniaPartner[] = [
   {
     id: "partner-olympian",
     name: "Olympian Dairy Labs",

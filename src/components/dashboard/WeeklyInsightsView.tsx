@@ -137,7 +137,7 @@ export const WeeklyInsightsView: React.FC = () => {
       <div className="bg-gradient-to-r from-teal-950/40 via-zinc-900 to-emerald-950/40 border border-teal-500/30 rounded-3xl p-6 shadow-sm space-y-4">
         <div className="flex items-center gap-2 text-teal-400 font-bold text-sm">
           <Sparkles className="w-5 h-5" />
-          <span>Foodora AI Longitudinal Observations</span>
+          <span>Nutrimania AI Longitudinal Observations</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">

@@ -4,7 +4,7 @@ import {
   FoodLogEntry,
   FoodMemory,
   CommunitySubmission,
-  FoodoraPartner,
+  NutrimaniaPartner,
   MealAnalysisResult,
   OCRLabelResult,
   MealType,
@@ -85,8 +85,8 @@ interface FoodContextType {
   communitySubmissions: CommunitySubmission[];
   addCommunitySubmission: (submission: Omit<CommunitySubmission, "id" | "submittedAt" | "votes" | "status">) => void;
   voteSubmission: (id: string) => void;
-  partners: FoodoraPartner[];
-  addPartnerApplication: (partner: Omit<FoodoraPartner, "id" | "verifiedSince" | "isVerified">) => void;
+  partners: NutrimaniaPartner[];
+  addPartnerApplication: (partner: Omit<NutrimaniaPartner, "id" | "verifiedSince" | "isVerified">) => void;
 
   // AI Active Results
   lastMealAnalysis: MealAnalysisResult | null;
@@ -99,23 +99,26 @@ interface FoodContextType {
   addChatMessage: (msg: Omit<ChatMessage, "id" | "timestamp">) => void;
   clearChat: () => void;
 
-  // Theme
+  // Theme & Tone
   isDarkMode: boolean;
   toggleDarkMode: () => void;
+  isBrainrotMode: boolean;
+  toggleBrainrotMode: () => void;
 }
 
 const FoodContext = createContext<FoodContextType | undefined>(undefined);
 
 const STORAGE_KEYS = {
-  LOGS: "foodora_today_logs",
-  FAVORITES: "foodora_favorites",
-  MEMORIES: "foodora_memories",
-  RECIPES: "foodora_saved_recipes",
-  HISTORY: "foodora_history",
-  COMMUNITY: "foodora_community",
-  THEME: "foodora_theme",
-  GOALS: "foodora_goals",
-  WATER: "foodora_water",
+  LOGS: "nutrimania_today_logs",
+  FAVORITES: "nutrimania_favorites",
+  MEMORIES: "nutrimania_memories",
+  RECIPES: "nutrimania_saved_recipes",
+  HISTORY: "nutrimania_history",
+  COMMUNITY: "nutrimania_community",
+  THEME: "nutrimania_theme",
+  BRAINROT: "nutrimania_brainrot_mode",
+  GOALS: "nutrimania_goals",
+  WATER: "nutrimania_water",
 };
 
 export const FoodProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -129,7 +132,7 @@ export const FoodProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [foodDatabase, setFoodDatabase] = useState<FoodItem[]>(() => {
     const combinedBase = [...GLOBAL_EXPANDED_FOOD_DATABASE, ...SAMPLE_FOOD_DATABASE];
     try {
-      const customSaved = localStorage.getItem("foodora_custom_foods");
+      const customSaved = localStorage.getItem("nutrimania_custom_foods") || localStorage.getItem("foodora_custom_foods");
       if (customSaved) {
         const parsed = JSON.parse(customSaved);
         if (Array.isArray(parsed)) {
@@ -145,7 +148,7 @@ export const FoodProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return combinedBase;
   });
   const [comparisonItems, setComparisonItems] = useState<FoodItem[]>([]);
-  const [partners, setPartners] = useState<FoodoraPartner[]>(SAMPLE_PARTNERS);
+  const [partners, setPartners] = useState<NutrimaniaPartner[]>(SAMPLE_PARTNERS);
 
   const [lastMealAnalysis, setLastMealAnalysis] = useState<MealAnalysisResult | null>(null);
   const [lastOcrResult, setLastOcrResult] = useState<OCRLabelResult | null>(null);
@@ -159,6 +162,28 @@ export const FoodProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return false;
     }
   });
+
+  // Brainrot Mode State (Corporate Nutritionist vs Brainrot Edition)
+  const [isBrainrotMode, setIsBrainrotMode] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.BRAINROT);
+      return saved === "true";
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleBrainrotMode = () => {
+    setIsBrainrotMode((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(STORAGE_KEYS.BRAINROT, String(next));
+      } catch (e) {
+        console.error(e);
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     try {
@@ -511,8 +536,8 @@ export const FoodProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     );
   };
 
-  const addPartnerApplication = (partner: Omit<FoodoraPartner, "id" | "verifiedSince" | "isVerified">) => {
-    const newPartner: FoodoraPartner = {
+  const addPartnerApplication = (partner: Omit<NutrimaniaPartner, "id" | "verifiedSince" | "isVerified">) => {
+    const newPartner: NutrimaniaPartner = {
       ...partner,
       id: `partner-${Date.now()}`,
       verifiedSince: new Date().toISOString().split("T")[0],
@@ -529,7 +554,7 @@ export const FoodProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const updated = [food, ...prev];
       try {
         const customOnly = updated.filter((item) => item.id.startsWith("global-") || item.id.startsWith("custom-") || item.id.startsWith("sub-"));
-        localStorage.setItem("foodora_custom_foods", JSON.stringify(customOnly.slice(0, 100)));
+        localStorage.setItem("nutrimania_custom_foods", JSON.stringify(customOnly.slice(0, 100)));
       } catch (e) {
         console.error(e);
       }
@@ -647,6 +672,8 @@ export const FoodProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         clearChat,
         isDarkMode,
         toggleDarkMode,
+        isBrainrotMode,
+        toggleBrainrotMode,
       }}
     >
       {children}

@@ -175,7 +175,7 @@ export const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
             <span>
-              <strong>AI Formulation Notice:</strong> Nutritional metrics and ingredient steps are dynamically estimated by Foodora AI based on USDA references and standard culinary physics.
+              <strong>AI Formulation Notice:</strong> Nutritional metrics and ingredient steps are dynamically estimated by Nutrimania AI based on USDA references and standard culinary physics.
             </span>
           </div>
           <span className="text-[10px] font-mono text-amber-600/80 dark:text-amber-400/80 hidden sm:inline whitespace-nowrap">
@@ -615,6 +615,22 @@ export const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({
                   </div>
                 </div>
               )}
+
+              {/* Ghibli Lore & Aesthetic Story Card */}
+              <div className="p-6 rounded-3xl bg-gradient-to-br from-amber-50/90 via-orange-50/50 to-emerald-50/40 dark:from-slate-850 dark:via-amber-950/20 dark:to-slate-900 border border-amber-200 dark:border-amber-900/60 space-y-3 shadow-xs">
+                <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-extrabold text-xs uppercase tracking-wider">
+                  <Sparkles className="w-4 h-4" />
+                  <span>Ghibli &amp; Midnight Diner Culinary Lore</span>
+                </div>
+                <p className="text-xs sm:text-sm font-serif italic text-slate-800 dark:text-slate-200 leading-relaxed">
+                  {recipe.ghibliLore ||
+                    `“As steam gently rises from the pan, the aroma of simmering ingredients fills the warm midnight kitchen. Each component unites into a dish crafted to restore your spirit and fuel your adventure through another vibrant day.”`}
+                </p>
+                <div className="flex items-center justify-between text-[11px] text-amber-800 dark:text-amber-400/90 pt-1 font-semibold">
+                  <span>🍃 Handcrafted AI Story Formulation</span>
+                  <span>Nutrimania Culinary Studio</span>
+                </div>
+              </div>
 
               {/* Chef Tips */}
               {recipe.chefTips && recipe.chefTips.length > 0 && (

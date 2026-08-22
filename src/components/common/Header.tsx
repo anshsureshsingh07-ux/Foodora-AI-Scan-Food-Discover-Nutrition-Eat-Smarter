@@ -1,5 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useFood } from "../../context/FoodContext";
+import { soundFx } from "../../utils/soundEffects";
+import { CommandPaletteModal } from "./CommandPaletteModal";
+import { CreatorsDeskModal } from "./CreatorsDeskModal";
 import {
   Camera,
   Search,
@@ -25,6 +28,13 @@ import {
   ChevronUp,
   Cpu,
   ChefHat,
+  Volume2,
+  VolumeX,
+  Command,
+  Headphones,
+  Music,
+  User,
+  Skull,
 } from "lucide-react";
 
 export const Header: React.FC = () => {
@@ -38,6 +48,8 @@ export const Header: React.FC = () => {
     comparisonItems,
     isDarkMode,
     toggleDarkMode,
+    isBrainrotMode,
+    toggleBrainrotMode,
     todayLogs,
   } = useFood();
 
@@ -45,10 +57,49 @@ export const Header: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isDevNoticeDismissed, setIsDevNoticeDismissed] = useState(false);
   const [isDevNoticeExpanded, setIsDevNoticeExpanded] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isCreatorsDeskOpen, setIsCreatorsDeskOpen] = useState(false);
+  const [isMuted, setIsMuted] = useState(() => soundFx.getIsMuted());
+  const [isLoFiPlaying, setIsLoFiPlaying] = useState(() => soundFx.getIsLoFiPlaying());
+
+  const handleToggleBrainrot = () => {
+    soundFx.playAuraChime();
+    toggleBrainrotMode();
+  };
+
+  // Listen for Cmd+K or Ctrl+K globally
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+  }, []);
+
+  const handleToggleSound = () => {
+    const newMuted = soundFx.toggleMute();
+    setIsMuted(newMuted);
+  };
+
+  const handleToggleLoFi = () => {
+    soundFx.playPop();
+    const isNowPlaying = soundFx.toggleLoFiAmbience();
+    setIsLoFiPlaying(isNowPlaying);
+  };
+
+  const handleNavClick = (view: string) => {
+    soundFx.playPop();
+    setCurrentView(view);
+    setIsMobileMenuOpen(false);
+  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
+      soundFx.playPop();
       setCurrentView("database");
     }
   };
@@ -57,6 +108,16 @@ export const Header: React.FC = () => {
 
   return (
     <header id="main-header" className="sticky top-0 z-40 w-full flex flex-col shadow-sm">
+      <CommandPaletteModal
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+      />
+
+      <CreatorsDeskModal
+        isOpen={isCreatorsDeskOpen}
+        onClose={() => setIsCreatorsDeskOpen(false)}
+      />
+
       {/* 1. Real-time Under Active Development Notice Bar */}
       {!isDevNoticeDismissed && (
         <div
@@ -70,9 +131,9 @@ export const Header: React.FC = () => {
               </span>
               <p className="text-[11px] sm:text-xs font-medium truncate">
                 <strong className="font-extrabold uppercase tracking-wider bg-white/20 dark:bg-amber-900/60 px-1.5 py-0.5 rounded text-[10px] mr-1.5">
-                  Early Preview
+                  Live Preview
                 </strong>
-                Fura AI is actively under development — UI, features & database changes may occur continuously.
+                Nutrimania is actively under development — UI, features & database changes may occur continuously.
               </p>
               <button
                 type="button"
@@ -87,7 +148,7 @@ export const Header: React.FC = () => {
             <div className="flex items-center gap-2 flex-shrink-0">
               <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/20 dark:bg-black/40 text-[10px] font-mono font-bold">
                 <Cpu className="w-3 h-3 text-amber-300" />
-                Fura AI 1.2 Flash
+                Nutrimania AI
               </span>
               <button
                 type="button"
@@ -104,7 +165,7 @@ export const Header: React.FC = () => {
           {isDevNoticeExpanded && (
             <div className="max-w-7xl mx-auto pt-2 pb-1 text-[11px] text-amber-100 dark:text-amber-300/90 border-t border-white/20 dark:border-amber-800/40 mt-1.5 leading-relaxed">
               <p>
-                🚧 You are using the continuous preview build of <strong>Fura AI 1.2 Flash</strong>. Multimodal computer vision models, nutrient estimation algorithms, OCR parsers, recipe generation pipelines, and database records are receiving frequent updates. If you spot inconsistencies, feel free to use the community dish feedback or the AI Assistant to report observations.
+                🚧 You are exploring <strong>Nutrimania</strong>, created and developed by <strong>Ansh Singh</strong>. Multimodal computer vision models, nutrient estimation algorithms, OCR parsers, recipe generation pipelines, and database records are receiving frequent updates.
               </p>
             </div>
           )}
@@ -113,49 +174,47 @@ export const Header: React.FC = () => {
 
       {/* 2. Main Navigation Bar */}
       <div className="w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 h-20 flex items-center justify-between gap-4">
-          {/* Logo & Brand with Fura AI 1.2 Flash */}
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 h-20 flex items-center justify-between gap-3 sm:gap-4">
+          {/* Logo & Brand with NUTRIMANIA */}
           <div
             className="flex items-center gap-3 cursor-pointer select-none flex-shrink-0"
-            onClick={() => setCurrentView("home")}
+            onClick={() => handleNavClick("home")}
           >
             <div className="w-10 h-10 bg-gradient-to-tr from-emerald-600 to-teal-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white flex-shrink-0">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
-                  Fura<span className="text-emerald-600 dark:text-emerald-400">.AI</span>
+                <span className="text-2xl font-black tracking-tight text-slate-900 dark:text-white uppercase">
+                  Nutri<span className="text-emerald-600 dark:text-emerald-400">mania</span>
                 </span>
                 <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                  1.2 Flash
+                  AI
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block">
-                Scan. Formulate. Eat Smarter.
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block font-medium">
+                Discover Food. Understand Nutrition.
               </p>
             </div>
           </div>
 
-          {/* Search bar (Desktop) */}
-          <form
-            onSubmit={handleSearchSubmit}
-            className="hidden xl:flex flex-1 max-w-xs items-center relative"
+          {/* Quick Spotlight Search Trigger (Cmd+K) */}
+          <button
+            type="button"
+            onClick={() => setIsCommandPaletteOpen(true)}
+            className="hidden md:flex items-center gap-2.5 px-3.5 py-2 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 hover:border-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 text-xs font-medium transition-all max-w-xs flex-1 cursor-pointer"
           >
-            <Search className="w-4 h-4 absolute left-3.5 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search 2.5M+ foods, recipes..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-xs rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-            />
-          </form>
+            <Search className="w-4 h-4 text-slate-400 flex-shrink-0" />
+            <span className="truncate">Search 2.5M+ foods, actions...</span>
+            <span className="ml-auto flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[10px] font-mono font-bold text-slate-500 dark:text-slate-400">
+              ⌘K
+            </span>
+          </button>
 
           {/* Sleek Navigation Links (Desktop) */}
-          <nav className="hidden lg:flex items-center gap-5 xl:gap-7 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+          <nav className="hidden lg:flex items-center gap-5 xl:gap-6 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
             <button
-              onClick={() => setCurrentView("home")}
+              onClick={() => handleNavClick("home")}
               className={`transition-all py-1 cursor-pointer ${
                 currentView === "home"
                   ? "text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-600 dark:border-emerald-400 font-extrabold"
@@ -165,7 +224,7 @@ export const Header: React.FC = () => {
               Home
             </button>
             <button
-              onClick={() => setCurrentView("recipes")}
+              onClick={() => handleNavClick("recipes")}
               className={`transition-all py-1 cursor-pointer flex items-center gap-1.5 ${
                 currentView === "recipes"
                   ? "text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-600 dark:border-emerald-400 font-extrabold"
@@ -179,7 +238,7 @@ export const Header: React.FC = () => {
               </span>
             </button>
             <button
-              onClick={() => setCurrentView("database")}
+              onClick={() => handleNavClick("database")}
               className={`transition-all py-1 cursor-pointer ${
                 currentView === "database"
                   ? "text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-600 dark:border-emerald-400 font-extrabold"
@@ -189,7 +248,7 @@ export const Header: React.FC = () => {
               Database
             </button>
             <button
-              onClick={() => setCurrentView("meal-analyzer")}
+              onClick={() => handleNavClick("meal-analyzer")}
               className={`transition-all py-1 cursor-pointer ${
                 currentView === "meal-analyzer"
                   ? "text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-600 dark:border-emerald-400 font-extrabold"
@@ -199,7 +258,7 @@ export const Header: React.FC = () => {
               Analyzer
             </button>
             <button
-              onClick={() => setCurrentView("partners")}
+              onClick={() => handleNavClick("partners")}
               className={`transition-all py-1 cursor-pointer ${
                 currentView === "partners"
                   ? "text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-600 dark:border-emerald-400 font-extrabold"
@@ -209,7 +268,7 @@ export const Header: React.FC = () => {
               Partners
             </button>
             <button
-              onClick={() => setCurrentView("dashboard")}
+              onClick={() => handleNavClick("dashboard")}
               className={`transition-all py-1 flex items-center gap-1.5 cursor-pointer ${
                 currentView === "dashboard"
                   ? "text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-600 dark:border-emerald-400 font-extrabold"
@@ -226,35 +285,111 @@ export const Header: React.FC = () => {
             </button>
           </nav>
 
-          {/* Action Triggers & Theme Toggle */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* Action Triggers & Theme / Sound Toggles */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
             {/* Quick Camera Scan Trigger */}
             <button
               id="header-scan-food-btn"
-              onClick={() => setIsScanModalOpen(true)}
-              className="flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full text-xs sm:text-sm font-bold shadow-md shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer whitespace-nowrap"
-              title="Scan Food with Camera (Fura AI 1.2 Flash)"
+              onClick={() => {
+                soundFx.playScanRadar();
+                setIsScanModalOpen(true);
+              }}
+              className="flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4.5 py-2 sm:py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full text-xs sm:text-sm font-bold shadow-md shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer whitespace-nowrap"
+              title="Scan Food with Camera (Nutrimania AI)"
             >
               <Camera className="w-4 h-4 text-white flex-shrink-0" />
-              <span>Scan Food</span>
+              <span className="hidden sm:inline">Scan Food</span>
+              <span className="sm:hidden">Scan</span>
             </button>
 
-            {/* Ask Fura AI button */}
+            {/* Ask Nutrimania AI button */}
             <button
               id="header-ask-ai-btn"
-              onClick={() => setIsAskDrawerOpen(true)}
-              className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/80 hover:bg-emerald-100 dark:hover:bg-emerald-900 active:scale-95 rounded-full border border-emerald-200 dark:border-emerald-800 transition-all cursor-pointer whitespace-nowrap"
-              title="Ask Fura AI 1.2 Flash"
+              onClick={() => {
+                soundFx.playPop();
+                setIsAskDrawerOpen(true);
+              }}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/80 hover:bg-emerald-100 dark:hover:bg-emerald-900 active:scale-95 rounded-full border border-emerald-200 dark:border-emerald-800 transition-all cursor-pointer whitespace-nowrap"
+              title="Ask Nutrimania AI"
             >
               <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
               <span>Ask AI</span>
+            </button>
+
+            {/* Creator's Desk Trigger */}
+            <button
+              id="header-creator-desk-btn"
+              onClick={() => {
+                soundFx.playPop();
+                setIsCreatorsDeskOpen(true);
+              }}
+              className="hidden xl:flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/80 hover:bg-amber-100 dark:hover:bg-amber-900 active:scale-95 rounded-full border border-amber-200 dark:border-amber-800/80 transition-all cursor-pointer whitespace-nowrap"
+              title="Creator's Desk • Ansh Singh"
+            >
+              <User className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+              <span>Creator's Desk</span>
+            </button>
+
+            {/* 🥦💀 Brainrot Mode Quick Toggle */}
+            <button
+              type="button"
+              onClick={handleToggleBrainrot}
+              className={`hidden md:flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-full border transition-all cursor-pointer whitespace-nowrap active:scale-95 ${
+                isBrainrotMode
+                  ? "bg-purple-950/90 text-purple-200 border-purple-500/80 shadow-xs shadow-purple-500/20"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200"
+              }`}
+              title={isBrainrotMode ? "Switch to Corporate Nutritionist Mode" : "Switch to Brainrot Edition 🥦💀"}
+            >
+              <Skull className={`w-3.5 h-3.5 ${isBrainrotMode ? "text-purple-400 animate-pulse" : "text-slate-400"}`} />
+              <span>{isBrainrotMode ? "Brainrot Active" : "Brainrot Mode"}</span>
+            </button>
+
+            {/* Ambient Lo-Fi Audio Toggle */}
+            <button
+              type="button"
+              onClick={handleToggleLoFi}
+              className={`p-2 sm:p-2.5 rounded-full transition-all border cursor-pointer flex items-center justify-center flex-shrink-0 relative ${
+                isLoFiPlaying
+                  ? "bg-amber-500 text-slate-950 border-amber-400 shadow-md shadow-amber-500/30 scale-105"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700"
+              }`}
+              title={isLoFiPlaying ? "Pause Lo-Fi Kitchen Rain Ambience" : "Play Cozy Lo-Fi Kitchen & Cafe Ambience"}
+              aria-label={isLoFiPlaying ? "Stop Lo-Fi Ambience" : "Start Lo-Fi Ambience"}
+            >
+              {isLoFiPlaying ? (
+                <>
+                  <Headphones className="w-4 h-4 text-slate-950 animate-bounce" />
+                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping" />
+                </>
+              ) : (
+                <Headphones className="w-4 h-4" />
+              )}
+            </button>
+
+            {/* Sound FX Mute/Unmute Toggle */}
+            <button
+              type="button"
+              onClick={handleToggleSound}
+              className={`p-2 sm:p-2.5 rounded-full transition-colors border cursor-pointer flex items-center justify-center flex-shrink-0 ${
+                !isMuted
+                  ? "bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700"
+              }`}
+              title={isMuted ? "Unmute Audio FX (Pop & Success chimes)" : "Mute Audio FX"}
+              aria-label={isMuted ? "Unmute Sound" : "Mute Sound"}
+            >
+              {!isMuted ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
             </button>
 
             {/* Day / Night Theme Toggle */}
             <button
               id="theme-toggle-btn"
               type="button"
-              onClick={toggleDarkMode}
+              onClick={() => {
+                soundFx.playPop();
+                toggleDarkMode();
+              }}
               className="p-2 sm:p-2.5 text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 cursor-pointer flex items-center justify-center flex-shrink-0"
               aria-label={isDarkMode ? "Switch to Day / Light Mode" : "Switch to Night / Dark Mode"}
               title={isDarkMode ? "Switch to Day (Light Mode)" : "Switch to Night (Dark Mode)"}
@@ -268,19 +403,22 @@ export const Header: React.FC = () => {
 
             {/* Profile Avatar */}
             <div
-              onClick={() => setCurrentView("dashboard")}
+              onClick={() => handleNavClick("dashboard")}
               className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-emerald-500 p-0.5 cursor-pointer hover:scale-105 transition-transform flex-shrink-0"
               title="My Health Dashboard"
             >
-              <div className="w-full h-full bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center text-slate-700 dark:text-slate-200 font-extrabold text-xs">
-                FA
+              <div className="w-full h-full bg-emerald-600 text-white rounded-full flex items-center justify-center font-extrabold text-xs">
+                NM
               </div>
             </div>
 
             {/* Mobile menu toggle */}
             <button
               id="mobile-menu-toggle"
-              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+              onClick={() => {
+                soundFx.playPop();
+                setIsMobileMenuOpen((prev) => !prev);
+              }}
               className="lg:hidden p-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl cursor-pointer border border-slate-200 dark:border-slate-700"
               aria-label="Toggle navigation menu"
             >
@@ -293,56 +431,61 @@ export const Header: React.FC = () => {
       {/* Mobile Drawer Menu */}
       {isMobileMenuOpen && (
         <div className="lg:hidden border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 pt-3 pb-6 space-y-3 shadow-xl max-h-[85vh] overflow-y-auto">
-          {/* Quick Search on Mobile */}
-          <form onSubmit={handleSearchSubmit} className="relative">
-            <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search dishes, ingredients, recipes..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-          </form>
+          {/* Quick Spotlight button on Mobile */}
+          <button
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              setIsCommandPaletteOpen(true);
+            }}
+            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-xs font-semibold"
+          >
+            <Search className="w-4 h-4 text-emerald-500" />
+            <span>Search foods, recipes, actions...</span>
+            <span className="ml-auto px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">
+              ⌘K
+            </span>
+          </button>
 
           {/* Quick Scan Modes Grid */}
           <div className="grid grid-cols-4 gap-2 mb-3">
             <button
               onClick={() => {
+                soundFx.playScanRadar();
                 setIsScanModalOpen(true);
                 setIsMobileMenuOpen(false);
               }}
-              className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold"
+              className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold cursor-pointer"
             >
               <Camera className="w-5 h-5 mb-1 text-emerald-600 dark:text-emerald-400" />
               <span>Camera</span>
             </button>
             <button
               onClick={() => {
+                soundFx.playPop();
                 setIsBarcodeModalOpen(true);
                 setIsMobileMenuOpen(false);
               }}
-              className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 text-xs font-semibold"
+              className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 text-xs font-semibold cursor-pointer"
             >
               <Barcode className="w-5 h-5 mb-1 text-teal-600 dark:text-teal-400" />
               <span>Barcode</span>
             </button>
             <button
               onClick={() => {
+                soundFx.playPop();
                 setIsLabelModalOpen(true);
                 setIsMobileMenuOpen(false);
               }}
-              className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 text-xs font-semibold"
+              className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 text-xs font-semibold cursor-pointer"
             >
               <FileText className="w-5 h-5 mb-1 text-indigo-600 dark:text-indigo-400" />
               <span>OCR Label</span>
             </button>
             <button
               onClick={() => {
-                setCurrentView("upload-image");
-                setIsMobileMenuOpen(false);
+                handleNavClick("upload-image");
               }}
-              className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 text-xs font-semibold"
+              className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 text-xs font-semibold cursor-pointer"
             >
               <ImageIcon className="w-5 h-5 mb-1 text-amber-600 dark:text-amber-400" />
               <span>Upload</span>
@@ -351,104 +494,95 @@ export const Header: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-2 text-xs font-medium">
             <button
-              onClick={() => {
-                setCurrentView("recipes");
-                setIsMobileMenuOpen(false);
-              }}
-              className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-left text-emerald-900 dark:text-emerald-200 font-bold border border-emerald-200 dark:border-emerald-800"
+              onClick={() => handleNavClick("recipes")}
+              className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-left text-emerald-900 dark:text-emerald-200 font-bold border border-emerald-200 dark:border-emerald-800 cursor-pointer"
             >
               <ChefHat className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <span>AI Recipes</span>
             </button>
             <button
               onClick={() => {
+                soundFx.playPop();
                 setIsAskDrawerOpen(true);
                 setIsMobileMenuOpen(false);
               }}
-              className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-left text-slate-900 dark:text-white font-bold"
+              className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-left text-slate-900 dark:text-white font-bold cursor-pointer"
             >
               <Sparkles className="w-4 h-4 text-emerald-500" />
-              <span>Ask Fura AI</span>
+              <span>Ask AI</span>
             </button>
             <button
-              onClick={() => {
-                setCurrentView("database");
-                setIsMobileMenuOpen(false);
-              }}
-              className="flex items-center gap-2 p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-left text-slate-800 dark:text-slate-200"
+              onClick={() => handleNavClick("database")}
+              className="flex items-center gap-2 p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-left text-slate-800 dark:text-slate-200 cursor-pointer"
             >
               <Search className="w-4 h-4 text-emerald-500" />
               <span>Food Database</span>
             </button>
             <button
-              onClick={() => {
-                setCurrentView("meal-analyzer");
-                setIsMobileMenuOpen(false);
-              }}
-              className="flex items-center gap-2 p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-left text-slate-800 dark:text-slate-200"
+              onClick={() => handleNavClick("meal-analyzer")}
+              className="flex items-center gap-2 p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-left text-slate-800 dark:text-slate-200 cursor-pointer"
             >
               <Layers className="w-4 h-4 text-teal-500" />
               <span>Meal Analyzer</span>
             </button>
             <button
-              onClick={() => {
-                setCurrentView("compare");
-                setIsMobileMenuOpen(false);
-              }}
-              className="flex items-center gap-2 p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-left text-slate-800 dark:text-slate-200"
+              onClick={() => handleNavClick("compare")}
+              className="flex items-center gap-2 p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-left text-slate-800 dark:text-slate-200 cursor-pointer"
             >
               <TrendingUp className="w-4 h-4 text-indigo-500" />
               <span>Compare ({comparisonItems.length})</span>
             </button>
             <button
-              onClick={() => {
-                setCurrentView("dashboard");
-                setIsMobileMenuOpen(false);
-              }}
-              className="flex items-center gap-2 p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-left text-slate-800 dark:text-slate-200"
+              onClick={() => handleNavClick("dashboard")}
+              className="flex items-center gap-2 p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-left text-slate-800 dark:text-slate-200 cursor-pointer"
             >
               <Calendar className="w-4 h-4 text-amber-500" />
               <span>Dashboard</span>
             </button>
             <button
-              onClick={() => {
-                setCurrentView("cuisines");
-                setIsMobileMenuOpen(false);
-              }}
-              className="flex items-center gap-2 p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-left text-slate-800 dark:text-slate-200"
+              onClick={() => handleNavClick("cuisines")}
+              className="flex items-center gap-2 p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-left text-slate-800 dark:text-slate-200 cursor-pointer"
             >
               <Globe className="w-4 h-4 text-sky-500" />
               <span>Global Cuisines</span>
             </button>
             <button
-              onClick={() => {
-                setCurrentView("categories");
-                setIsMobileMenuOpen(false);
-              }}
-              className="flex items-center gap-2 p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-left text-slate-800 dark:text-slate-200"
+              onClick={() => handleNavClick("categories")}
+              className="flex items-center gap-2 p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-left text-slate-800 dark:text-slate-200 cursor-pointer"
             >
               <BookOpen className="w-4 h-4 text-rose-500" />
               <span>Categories</span>
             </button>
             <button
-              onClick={() => {
-                setCurrentView("partners");
-                setIsMobileMenuOpen(false);
-              }}
-              className="flex items-center gap-2 p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-left text-slate-800 dark:text-slate-200"
+              onClick={() => handleNavClick("partners")}
+              className="flex items-center gap-2 p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-left text-slate-800 dark:text-slate-200 cursor-pointer"
             >
               <Building2 className="w-4 h-4 text-emerald-500" />
               <span>Partners</span>
             </button>
             <button
               onClick={() => {
-                setCurrentView("about");
+                setIsMobileMenuOpen(false);
+                setIsCreatorsDeskOpen(true);
+              }}
+              className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 text-left text-amber-900 dark:text-amber-200 font-bold border border-amber-200 dark:border-amber-800/80 cursor-pointer"
+            >
+              <User className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+              <span>Creator's Desk (Ansh Singh)</span>
+            </button>
+            <button
+              onClick={() => {
+                handleToggleBrainrot();
                 setIsMobileMenuOpen(false);
               }}
-              className="flex items-center gap-2 p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-left text-slate-800 dark:text-slate-200"
+              className={`flex items-center gap-2 p-2.5 rounded-xl text-left font-bold border transition-colors cursor-pointer ${
+                isBrainrotMode
+                  ? "bg-purple-950/80 text-purple-300 border-purple-500/60"
+                  : "bg-slate-900 text-emerald-400 hover:bg-slate-800 border-emerald-500/40"
+              }`}
             >
-              <Users className="w-4 h-4 text-indigo-500" />
-              <span>About Fura AI</span>
+              <Skull className={`w-4 h-4 ${isBrainrotMode ? "text-purple-400" : "text-emerald-400"}`} />
+              <span>{isBrainrotMode ? "🥦💀 Brainrot Active (Tap to Disable)" : "🥦💀 Brainrot Edition"}</span>
             </button>
           </div>
         </div>
@@ -456,3 +590,4 @@ export const Header: React.FC = () => {
     </header>
   );
 };
+

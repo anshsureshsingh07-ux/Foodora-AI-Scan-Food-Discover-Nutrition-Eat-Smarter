@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useFood } from "../../context/FoodContext";
-import { MealType, FoodLogEntry } from "../../types/food";
+import { MealType, FoodLogEntry, DailyQuest } from "../../types/food";
+import { soundFx } from "../../utils/soundEffects";
 import {
   Flame,
   Droplet,
@@ -15,7 +16,15 @@ import {
   ChevronRight,
   ShieldCheck,
   Zap,
+  Award,
+  Trophy,
+  CheckCircle2,
+  ArrowRight,
+  RefreshCw,
+  Gift,
+  ArrowLeftRight,
 } from "lucide-react";
+import confetti from "canvas-confetti";
 
 export const PersonalDashboardView: React.FC = () => {
   const {
@@ -28,9 +37,26 @@ export const PersonalDashboardView: React.FC = () => {
     setCurrentView,
     setActiveFoodDetail,
     foodDatabase,
+    isBrainrotMode,
   } = useFood();
 
   const [activeTab, setActiveTab] = useState<"diary" | "insights" | "memories">("diary");
+  const [streakDays, setStreakDays] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem("nutrimania_streak_days");
+      return saved ? parseInt(saved, 10) : 7;
+    } catch {
+      return 7;
+    }
+  });
+  const [hasClaimedStreakBonus, setHasClaimedStreakBonus] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem("nutrimania_streak_claimed_today");
+      return saved === new Date().toISOString().split("T")[0];
+    } catch {
+      return false;
+    }
+  });
 
   // Sum today's logs
   const totalCalories = todayLogs.reduce((sum, log) => sum + log.calories, 0);
@@ -45,6 +71,113 @@ export const PersonalDashboardView: React.FC = () => {
   const carbsPct = Math.min(100, Math.round((totalCarbs / nutritionGoals.carbsG) * 100));
   const fatPct = Math.min(100, Math.round((totalFat / nutritionGoals.fatG) * 100));
   const waterPct = Math.min(100, Math.round((loggedWaterMl / nutritionGoals.waterMl) * 100));
+
+  // Daily Quests calculation with Brainrot mode adaptation
+  const quests: DailyQuest[] = [
+    {
+      id: "q1",
+      title: isBrainrotMode ? "Hydration Skibidi Arc 🌊" : "Hydration Champion",
+      description: isBrainrotMode
+        ? "Guzzle 2,000ml H2O so your cells don't turn to dust no cap"
+        : "Drink at least 2,000ml of water today",
+      targetCount: 2000,
+      currentCount: loggedWaterMl,
+      unit: "ml",
+      rewardAuraPoints: 150,
+      rewardAuraTier: "Clean Gains Energy",
+      isCompleted: loggedWaterMl >= 2000,
+      category: "hydration",
+      badgeEmoji: "💧",
+    },
+    {
+      id: "q2",
+      title: isBrainrotMode ? "Gigachad Protein Flex 💪" : "Protein Gladiator",
+      description: isBrainrotMode
+        ? `Hit 80% of protein (${nutritionGoals.proteinG}g) to max out your Aura`
+        : `Hit at least 80% of your daily protein goal (${nutritionGoals.proteinG}g)`,
+      targetCount: Math.round(nutritionGoals.proteinG * 0.8),
+      currentCount: Math.round(totalProtein),
+      unit: "g",
+      rewardAuraPoints: 250,
+      rewardAuraTier: "God-Tier Glow Up",
+      isCompleted: totalProtein >= nutritionGoals.proteinG * 0.8,
+      category: "protein",
+      badgeEmoji: "🥩",
+    },
+    {
+      id: "q3",
+      title: isBrainrotMode ? "Gut Microbiome W 🥦" : "Micro-Fiber Samurai",
+      description: isBrainrotMode
+        ? "Scarf down 20g fiber so your gut bacteria stays thriving fr"
+        : "Reach 20g of gut-friendly dietary fiber",
+      targetCount: 20,
+      currentCount: Math.round(totalFiber),
+      unit: "g",
+      rewardAuraPoints: 200,
+      rewardAuraTier: "God-Tier Glow Up",
+      isCompleted: totalFiber >= 20,
+      category: "fiber",
+      badgeEmoji: "🥦",
+    },
+    {
+      id: "q4",
+      title: isBrainrotMode ? "No NPC Logger 📸" : "Mindful Food Logger",
+      description: isBrainrotMode
+        ? "Track 3 meals to avoid entering goblin malnutrition mode"
+        : "Log at least 3 distinct meals today",
+      targetCount: 3,
+      currentCount: todayLogs.length,
+      unit: "meals",
+      rewardAuraPoints: 100,
+      rewardAuraTier: "Clean Gains Energy",
+      isCompleted: todayLogs.length >= 3,
+      category: "mindfulness",
+      badgeEmoji: "📝",
+    },
+  ];
+
+  // Smart Food Swaps Database
+  const smartSwaps = [
+    {
+      original: "White Rice (1 cup)",
+      replacement: "Quinoa or Cauliflower Rice",
+      benefit: "+4g Protein, +3g Fiber, Lowers Glycemic Load",
+      savingCalories: "45 kcal",
+    },
+    {
+      original: "Mayonnaise (2 tbsp)",
+      replacement: "Greek Yogurt + Dijon & Lemon",
+      benefit: "90% less saturated fat, +6g protein boost",
+      savingCalories: "140 kcal",
+    },
+    {
+      original: "Sugary Soda Can",
+      replacement: "Sparkling Water + Fresh Lime & Mint",
+      benefit: "Zero refined high-fructose corn syrup, gut safe",
+      savingCalories: "150 kcal",
+    },
+  ];
+
+  const handleClaimStreak = () => {
+    if (hasClaimedStreakBonus) return;
+    const todayStr = new Date().toISOString().split("T")[0];
+    const newStreak = streakDays + 1;
+    setHasClaimedStreakBonus(true);
+    setStreakDays(newStreak);
+    try {
+      localStorage.setItem("nutrimania_streak_days", String(newStreak));
+      localStorage.setItem("nutrimania_streak_claimed_today", todayStr);
+    } catch (e) {
+      console.error(e);
+    }
+    soundFx.playAuraChime();
+    confetti({
+      particleCount: 90,
+      spread: 80,
+      origin: { y: 0.5 },
+      colors: ["#f59e0b", "#10b981", "#6366f1", "#ec4899"],
+    });
+  };
 
   // Average health score of logged foods
   const avgHealthScore =
@@ -67,21 +200,114 @@ export const PersonalDashboardView: React.FC = () => {
             <span>Today • {new Date().toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
-            Personal Nutrition Dashboard
+            Personal Nutrition &amp; Aura Engine
           </h1>
           <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-            Track daily macro balance, micronutrient targets, and mindful food logs.
+            Track daily macro balance, level up your Nutri-Streak, and complete daily nutrition quests.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {/* 🔥 Nutri-Streak Widget */}
+          <div
+            onClick={handleClaimStreak}
+            className={`p-2.5 px-4 rounded-2xl border transition-all flex items-center gap-2.5 cursor-pointer shadow-xs ${
+              hasClaimedStreakBonus
+                ? "bg-amber-500/10 border-amber-500/30 text-amber-500"
+                : "bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 border-amber-400/50 text-amber-600 dark:text-amber-400 hover:scale-105 active:scale-95 animate-pulse"
+            }`}
+            title="Click to claim daily streak bonus"
+          >
+            <Flame className="w-5 h-5 text-amber-500 fill-amber-500" />
+            <div>
+              <div className="text-[10px] uppercase font-extrabold tracking-wider leading-none">
+                {hasClaimedStreakBonus ? "Streak Active" : "Claim Streak"}
+              </div>
+              <div className="text-sm font-black tracking-tight">{streakDays} Days 🔥</div>
+            </div>
+          </div>
+
           <button
             onClick={() => setIsScanModalOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all active:scale-95"
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-2xl shadow-sm transition-all active:scale-95 cursor-pointer"
           >
             <Camera className="w-4 h-4" />
-            <span>Scan New Food</span>
+            <span>Scan Food</span>
           </button>
+        </div>
+      </div>
+
+      {/* Gamified Food Quests Banner */}
+      <div className="bg-gradient-to-br from-zinc-900 via-slate-900 to-emerald-950 border border-emerald-500/30 rounded-3xl p-6 shadow-xl text-white space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center">
+              <Trophy className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-extrabold tracking-tight flex items-center gap-2">
+                <span>Daily Food Quests &amp; Aura XP</span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                  {quests.filter((q) => q.isCompleted).length} / {quests.length} Completed
+                </span>
+              </h2>
+              <p className="text-xs text-zinc-400">Complete quests to level up your food aura and unlock culinary badges</p>
+            </div>
+          </div>
+
+          <span className="text-xs font-mono font-bold text-emerald-400 hidden sm:inline">
+            +{quests.reduce((acc, q) => (q.isCompleted ? acc + q.rewardAuraPoints : acc), 0)} Aura XP Earned
+          </span>
+        </div>
+
+        {/* Quests Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {quests.map((quest) => (
+            <div
+              key={quest.id}
+              className={`p-3.5 rounded-2xl border transition-all ${
+                quest.isCompleted
+                  ? "bg-emerald-950/40 border-emerald-500/60 shadow-xs shadow-emerald-500/10"
+                  : "bg-zinc-900/60 border-zinc-800/80 hover:border-zinc-700"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <span className="text-xs font-bold text-zinc-100 flex items-center gap-1.5">
+                  <span className="text-sm">{quest.badgeEmoji}</span>
+                  {quest.isCompleted ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  ) : (
+                    <div className="w-4 h-4 rounded-full border border-zinc-600 shrink-0" />
+                  )}
+                  <span className={quest.isCompleted ? "line-through text-zinc-400" : ""}>
+                    {quest.title}
+                  </span>
+                </span>
+                <span className="text-[10px] font-mono font-bold text-amber-400 bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-800/60">
+                  +{quest.rewardAuraPoints} XP
+                </span>
+              </div>
+              <p className="text-[11px] text-zinc-400 mb-2.5 line-clamp-2">{quest.description}</p>
+              
+              {/* Progress bar */}
+              <div className="space-y-1">
+                <div className="flex justify-between text-[10px] font-mono text-zinc-400">
+                  <span>Progress</span>
+                  <span className="font-bold text-zinc-200">
+                    {quest.currentCount} / {quest.targetCount} {quest.unit}
+                  </span>
+                </div>
+                <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
+                  <div
+                    style={{ width: `${Math.min(100, (quest.currentCount / quest.targetCount) * 100)}%` }}
+                    className={`h-full rounded-full transition-all ${
+                      quest.isCompleted ? "bg-emerald-400" : "bg-teal-500"
+                    }`}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -89,7 +315,7 @@ export const PersonalDashboardView: React.FC = () => {
       <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-1 text-sm font-semibold">
         <button
           onClick={() => setActiveTab("diary")}
-          className={`px-4 py-2 rounded-xl transition-all ${
+          className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${
             activeTab === "diary"
               ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
               : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
@@ -99,14 +325,14 @@ export const PersonalDashboardView: React.FC = () => {
         </button>
         <button
           onClick={() => setCurrentView("insights")}
-          className="px-4 py-2 rounded-xl text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-all flex items-center gap-1.5"
+          className="px-4 py-2 rounded-xl text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-all flex items-center gap-1.5 cursor-pointer"
         >
           <TrendingUp className="w-4 h-4 text-teal-500" />
           <span>Weekly Insights</span>
         </button>
         <button
           onClick={() => setCurrentView("memories")}
-          className="px-4 py-2 rounded-xl text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-all flex items-center gap-1.5"
+          className="px-4 py-2 rounded-xl text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-all flex items-center gap-1.5 cursor-pointer"
         >
           <Heart className="w-4 h-4 text-rose-500" />
           <span>Food Memories</span>
@@ -225,18 +451,147 @@ export const PersonalDashboardView: React.FC = () => {
 
           <div className="flex items-center gap-1.5">
             <button
-              onClick={() => addWater(250)}
-              className="flex-1 py-1.5 bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 text-sky-700 dark:text-sky-300 font-bold text-xs rounded-xl border border-sky-200 dark:border-sky-800 transition-colors"
+              onClick={() => {
+                addWater(250);
+                soundFx.playAuraChime();
+              }}
+              className="flex-1 py-1.5 bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 text-sky-700 dark:text-sky-300 font-bold text-xs rounded-xl border border-sky-200 dark:border-sky-800 transition-colors cursor-pointer"
             >
               +250 ml
             </button>
             <button
-              onClick={() => addWater(500)}
-              className="flex-1 py-1.5 bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 text-sky-700 dark:text-sky-300 font-bold text-xs rounded-xl border border-sky-200 dark:border-sky-800 transition-colors"
+              onClick={() => {
+                addWater(500);
+                soundFx.playAuraChime();
+              }}
+              className="flex-1 py-1.5 bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 text-sky-700 dark:text-sky-300 font-bold text-xs rounded-xl border border-sky-200 dark:border-sky-800 transition-colors cursor-pointer"
             >
               +500 ml
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Smart Food Swaps Advisor */}
+      <div className="p-5 rounded-3xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <ArrowLeftRight className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <h3 className="font-extrabold text-sm text-zinc-900 dark:text-white">
+              Smart Food Swaps (Instant Calorie &amp; Macro Optimization)
+            </h3>
+          </div>
+          <span className="text-xs text-zinc-500">AI Nutrition Hacks</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {smartSwaps.map((swap, idx) => (
+            <div
+              key={idx}
+              className="p-3.5 rounded-2xl bg-white dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-750 text-xs space-y-1.5"
+            >
+              <div className="flex items-center justify-between text-zinc-400">
+                <span className="line-through text-zinc-400">{swap.original}</span>
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded">
+                  Save {swap.savingCalories}
+                </span>
+              </div>
+              <div className="font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
+                <span>➔</span>
+                <span>{swap.replacement}</span>
+              </div>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">{swap.benefit}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Meals Journal Timeline */}
+      <div className="space-y-6">
+        <h2 className="text-lg font-extrabold text-zinc-900 dark:text-white tracking-tight">
+          Today's Meal Diary
+        </h2>
+
+        <div className="space-y-4">
+          {mealSections.map((mealType) => {
+            const logsForMeal = todayLogs.filter((log) => log.mealType === mealType);
+            const mealCalories = logsForMeal.reduce((s, l) => s + l.calories, 0);
+
+            return (
+              <div
+                key={mealType}
+                className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-5 shadow-xs space-y-4"
+              >
+                <div className="flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-zinc-800">
+                  <div className="flex items-center gap-2.5">
+                    <h3 className="font-extrabold text-zinc-900 dark:text-white text-base">
+                      {mealType}
+                    </h3>
+                    <span className="text-xs text-zinc-400">
+                      ({logsForMeal.length} {logsForMeal.length === 1 ? "item" : "items"})
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-bold text-zinc-900 dark:text-white">
+                      {mealCalories} kcal
+                    </span>
+                    <button
+                      onClick={() => setCurrentView("database")}
+                      className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 hover:underline cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add</span>
+                    </button>
+                  </div>
+                </div>
+
+                {logsForMeal.length === 0 ? (
+                  <div className="py-6 text-center text-xs text-zinc-400">
+                    No foods logged for {mealType} yet.
+                  </div>
+                ) : (
+                  <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                    {logsForMeal.map((log) => (
+                      <div
+                        key={log.id}
+                        className="py-3 flex items-center justify-between gap-3 text-xs"
+                      >
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={log.imageUrl}
+                            alt={log.foodName}
+                            className="w-11 h-11 rounded-xl object-cover"
+                          />
+                          <div>
+                            <h4 className="font-bold text-zinc-900 dark:text-white text-sm">
+                              {log.foodName}
+                            </h4>
+                            <p className="text-zinc-500">
+                              {log.servings}x portion ({log.grams}g) • P: {log.proteinG}g | C: {log.carbsG}g | F: {log.fatG}g
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm font-black text-zinc-900 dark:text-white">
+                            {log.calories} <span className="text-[10px] text-zinc-400 font-normal">kcal</span>
+                          </span>
+                          <button
+                            onClick={() => removeFoodLog(log.id)}
+                            className="p-1 text-zinc-400 hover:text-rose-500 transition-colors cursor-pointer"
+                            title="Remove log entry"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 

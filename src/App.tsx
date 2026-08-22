@@ -25,7 +25,7 @@ import { HomeView } from "./components/home/HomeView";
 import { RecipeGeneratorView } from "./components/recipes/RecipeGeneratorView";
 
 const MainContent: React.FC = () => {
-  const { currentView } = useFood();
+  const { currentView, activeFoodDetail, setActiveFoodDetail } = useFood();
 
   const renderCurrentView = () => {
     switch (currentView) {
@@ -56,6 +56,7 @@ const MainContent: React.FC = () => {
       case "collaborations":
         return <CollaborationsView />;
       case "upload":
+      case "upload-image":
         return <ImageUploadDropzone />;
       case "about":
         return <AboutViews />;
@@ -78,7 +79,10 @@ const MainContent: React.FC = () => {
       <Footer />
 
       {/* Floating Global Modals & Drawers */}
-      <FoodDetailModal />
+      <FoodDetailModal
+        food={activeFoodDetail}
+        onClose={() => setActiveFoodDetail(null)}
+      />
       <ScanCameraModal />
       <BarcodeScannerModal />
       <LabelScannerModal />

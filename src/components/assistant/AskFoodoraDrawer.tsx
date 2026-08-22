@@ -19,19 +19,31 @@ export const AskFoodoraDrawer: React.FC = () => {
     chatMessages,
     addChatMessage,
     clearChat,
+    isBrainrotMode,
+    activeFoodDetail,
   } = useFood();
 
   const [inputQuery, setInputQuery] = useState("");
   const [isAiResponding, setIsAiResponding] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  const promptSuggestions = [
+  const corporatePromptSuggestions = [
     "What are the nutritional benefits of ceremonial matcha?",
     "Explain the difference between artisan sourdough and regular white bread",
     "Which foods are best for gut microbiome diversity?",
     "Is daily avocado consumption healthy for cholesterol levels?",
     "What are the cleanest high-protein vegetarian foods?",
   ];
+
+  const brainrotPromptSuggestions = [
+    "Roast my late-night instant ramen binge 💀",
+    "Is peanut butter god-tier aura or instant fat trap?",
+    "How to mew with high-protein jawline nutrition fr?",
+    "Rate my high-protein gym bro meal prep no cap",
+    "Why does ultra-processed sugar drain my aura points?",
+  ];
+
+  const promptSuggestions = isBrainrotMode ? brainrotPromptSuggestions : corporatePromptSuggestions;
 
   useEffect(() => {
     if (isAskDrawerOpen) {
@@ -57,6 +69,8 @@ export const AskFoodoraDrawer: React.FC = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           query: text,
+          isBrainrotMode,
+          activeFoodContext: activeFoodDetail,
           history: chatMessages.slice(-6).map((m) => ({
             role: m.role,
             content: m.content,
@@ -68,21 +82,23 @@ export const AskFoodoraDrawer: React.FC = () => {
         const data = await response.json();
         addChatMessage({
           role: "assistant",
-          content: data.answer || "Here is what Fura AI 1.2 Flash food intelligence discovered.",
+          content: data.reply || data.answer || "Here is what Nutrimania food intelligence discovered.",
         });
       } else {
         addChatMessage({
           role: "assistant",
-          content:
-            "I encountered a temporary connection issue. However, based on nutritional research, focusing on whole, unprocessed foods with diverse plant fiber provides broad metabolic benefits.",
+          content: isBrainrotMode
+            ? "Bro the server is catching its breath 💀 but remember: clean whole foods = +10,000 aura!"
+            : "I encountered a temporary connection issue. However, based on nutritional research, focusing on whole, unprocessed foods with diverse plant fiber provides broad metabolic benefits.",
         });
       }
     } catch (err) {
       console.error("Chat error:", err);
       addChatMessage({
         role: "assistant",
-        content:
-          "Thank you for asking! For optimal food balance, combining whole-food protein sources with prebiotic fiber and healthy monounsaturated fats supports sustained satiety.",
+        content: isBrainrotMode
+          ? "Network glitch fr fr! But don't skip your protein and water intake today!"
+          : "Thank you for asking! For optimal food balance, combining whole-food protein sources with prebiotic fiber and healthy monounsaturated fats supports sustained satiety.",
       });
     } finally {
       setIsAiResponding(false);
@@ -92,7 +108,10 @@ export const AskFoodoraDrawer: React.FC = () => {
   if (!isAskDrawerOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-xs animate-in fade-in">
+    <div
+      className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-xs animate-in fade-in"
+      onClick={() => setIsAskDrawerOpen(false)}
+    >
       <div
         className="bg-white dark:bg-zinc-950 border-l border-zinc-200 dark:border-zinc-800 w-full max-w-lg h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-300"
         onClick={(e) => e.stopPropagation()}
@@ -107,13 +126,13 @@ export const AskFoodoraDrawer: React.FC = () => {
             </div>
             <div>
               <h2 className="font-extrabold text-sm text-zinc-900 dark:text-white flex items-center gap-1.5">
-                Ask Fura AI
+                Ask Nutrimania AI
                 <span className="text-[10px] uppercase font-bold px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
-                  1.2 Flash
+                  Assistant
                 </span>
               </h2>
               <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                Grounded food science, recipe synthesis & nutritional intelligence
+                Grounded food science, recipe synthesis &amp; nutritional intelligence
               </p>
             </div>
           </div>
@@ -121,14 +140,14 @@ export const AskFoodoraDrawer: React.FC = () => {
           <div className="flex items-center gap-1">
             <button
               onClick={clearChat}
-              className="p-2 text-zinc-400 hover:text-rose-500 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              className="p-2 text-zinc-400 hover:text-rose-500 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
               title="Clear conversation"
             >
               <Trash2 className="w-4 h-4" />
             </button>
             <button
               onClick={() => setIsAskDrawerOpen(false)}
-              className="p-2 text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              className="p-2 text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -192,7 +211,7 @@ export const AskFoodoraDrawer: React.FC = () => {
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce" />
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce [animation-delay:0.2s]" />
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce [animation-delay:0.4s]" />
-                <span className="ml-1 text-xs">Fura AI 1.2 Flash is formulating response...</span>
+                <span className="ml-1 text-xs">Nutrimania AI is formulating response...</span>
               </div>
             </div>
           )}
@@ -210,7 +229,7 @@ export const AskFoodoraDrawer: React.FC = () => {
               <button
                 key={idx}
                 onClick={() => handleSendMessage(prompt)}
-                className="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:border-emerald-500 hover:text-emerald-600 text-xs whitespace-nowrap transition-colors"
+                className="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:border-emerald-500 hover:text-emerald-600 text-xs whitespace-nowrap transition-colors cursor-pointer"
               >
                 {prompt}
               </button>
@@ -237,7 +256,7 @@ export const AskFoodoraDrawer: React.FC = () => {
             <button
               type="submit"
               disabled={isAiResponding || !inputQuery.trim()}
-              className="p-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl shadow-md transition-all active:scale-95 flex-shrink-0"
+              className="p-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl shadow-md transition-all active:scale-95 flex-shrink-0 cursor-pointer"
             >
               <Send className="w-4 h-4" />
             </button>

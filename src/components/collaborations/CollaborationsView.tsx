@@ -71,12 +71,12 @@ export const CollaborationsView: React.FC = () => {
               </p>
             </div>
 
-            {/* Foodora Nutritional breakdown */}
+            {/* Nutrimania Nutritional breakdown */}
             <div className="bg-zinc-900/90 border border-zinc-800 rounded-2xl p-4 space-y-3">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-bold text-emerald-400 flex items-center gap-1">
                   <ShieldCheck className="w-4 h-4" />
-                  Foodora Real-World Nutrition Analysis:
+                  Nutrimania Real-World Nutrition Analysis:
                 </span>
                 <span className="font-extrabold text-amber-400">
                   Health Index: {selectedStory.healthScore}/100
