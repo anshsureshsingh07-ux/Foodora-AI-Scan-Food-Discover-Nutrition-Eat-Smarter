@@ -33,9 +33,46 @@ export const FoodCard: React.FC<FoodCardProps> = ({ food }) => {
   const [showLogModal, setShowLogModal] = useState(false);
   const [selectedMealType, setSelectedMealType] = useState<MealType>("Lunch");
   const [servingCount, setServingCount] = useState(1);
+  const [tiltStyle, setTiltStyle] = useState<string>("");
+  const [glarePosition, setGlarePosition] = useState<{ x: number; y: number; opacity: number }>({
+    x: 50,
+    y: 50,
+    opacity: 0,
+  });
+
+  const cardRef = React.useRef<HTMLDivElement | null>(null);
 
   const isFav = isFavorite(food.id);
   const isCompared = comparisonItems.some((f) => f.id === food.id);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    const rotateX = ((y - centerY) / centerY) * -6;
+    const rotateY = ((x - centerX) / centerX) * 6;
+
+    setTiltStyle(
+      `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(
+        2
+      )}deg) translateZ(6px)`
+    );
+
+    setGlarePosition({
+      x: (x / rect.width) * 100,
+      y: (y / rect.height) * 100,
+      opacity: 0.2,
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setTiltStyle("perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)");
+    setGlarePosition((prev) => ({ ...prev, opacity: 0 }));
+  };
 
   const handleQuickLog = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -67,10 +104,30 @@ export const FoodCard: React.FC<FoodCardProps> = ({ food }) => {
   return (
     <>
       <div
+        ref={cardRef}
         id={`food-card-${food.id}`}
         onClick={() => setActiveFoodDetail(food)}
-        className="group relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden hover:shadow-xl hover:border-emerald-500/50 dark:hover:border-emerald-500/50 transition-all duration-300 flex flex-col cursor-pointer"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        style={{
+          transform: tiltStyle,
+          transformStyle: "preserve-3d",
+          willChange: "transform",
+        }}
+        className="group relative backdrop-blur-xl bg-white/70 dark:bg-slate-900/65 border border-white/50 dark:border-white/10 rounded-3xl overflow-hidden hover:shadow-2xl hover:shadow-emerald-500/10 dark:hover:shadow-black/40 hover:border-emerald-500/50 dark:hover:border-emerald-400/40 transition-all duration-300 flex flex-col cursor-pointer"
       >
+        {/* Specular glare overlay */}
+        <div
+          className="pointer-events-none absolute inset-0 transition-opacity duration-300 z-10"
+          style={{
+            background: `radial-gradient(circle 250px at ${glarePosition.x}% ${glarePosition.y}%, rgba(255, 255, 255, 0.4), transparent 75%)`,
+            opacity: glarePosition.opacity,
+          }}
+        />
+
+        {/* Top inner white glass edge highlight */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 dark:via-white/20 to-transparent z-10" />
+
         {/* Card Image with Badges */}
         <div className="relative h-48 w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
           <img

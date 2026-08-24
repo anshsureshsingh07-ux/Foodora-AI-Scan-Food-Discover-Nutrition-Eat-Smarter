@@ -23,6 +23,8 @@ import { ImageUploadDropzone } from "./components/scan/ImageUploadDropzone";
 import { AboutViews } from "./components/info/AboutViews";
 import { HomeView } from "./components/home/HomeView";
 import { RecipeGeneratorView } from "./components/recipes/RecipeGeneratorView";
+import { WaterDropletsCanvas } from "./components/common/WaterDropletsCanvas";
+import { GlassBackgroundBlobs } from "./components/common/GlassBackgroundBlobs";
 
 const MainContent: React.FC = () => {
   const { currentView, activeFoodDetail, setActiveFoodDetail } = useFood();
@@ -66,12 +68,18 @@ const MainContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 transition-colors duration-200">
+    <div className="relative min-h-screen flex flex-col bg-slate-50/90 dark:bg-slate-950/90 text-slate-900 dark:text-slate-100 transition-colors duration-200">
+      {/* 3D Ambient Refraction Lights & Noise Canvas */}
+      <GlassBackgroundBlobs />
+
+      {/* 3D Realistic Interactive Water Droplets Canvas */}
+      <WaterDropletsCanvas />
+
       {/* Header */}
       <Header />
 
       {/* Main View Body */}
-      <main className="flex-1">
+      <main className="relative z-10 flex-1">
         {renderCurrentView()}
       </main>
 

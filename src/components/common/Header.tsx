@@ -172,8 +172,8 @@ export const Header: React.FC = () => {
         </div>
       )}
 
-      {/* 2. Main Navigation Bar */}
-      <div className="w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
+      {/* 2. Main Navigation Bar with Frosted Glassmorphism */}
+      <div className="w-full bg-white/75 dark:bg-slate-950/75 backdrop-blur-xl border-b border-white/40 dark:border-white/10 shadow-xs transition-colors">
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 h-20 flex items-center justify-between gap-3 sm:gap-4">
           {/* Logo & Brand with NUTRIMANIA */}
           <div
@@ -202,17 +202,17 @@ export const Header: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsCommandPaletteOpen(true)}
-            className="hidden md:flex items-center gap-2.5 px-3.5 py-2 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 hover:border-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 text-xs font-medium transition-all max-w-xs flex-1 cursor-pointer"
+            className="hidden md:flex lg:flex items-center gap-2 px-3 py-2 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 hover:border-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 text-xs font-medium transition-all max-w-[160px] lg:max-w-xs flex-1 cursor-pointer"
           >
             <Search className="w-4 h-4 text-slate-400 flex-shrink-0" />
-            <span className="truncate">Search 2.5M+ foods, actions...</span>
-            <span className="ml-auto flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[10px] font-mono font-bold text-slate-500 dark:text-slate-400">
+            <span className="truncate">Search foods...</span>
+            <span className="ml-auto hidden xl:flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[10px] font-mono font-bold text-slate-500 dark:text-slate-400">
               ⌘K
             </span>
           </button>
 
           {/* Sleek Navigation Links (Desktop) */}
-          <nav className="hidden lg:flex items-center gap-5 xl:gap-6 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+          <nav className="hidden lg:flex items-center gap-4 xl:gap-6 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
             <button
               onClick={() => handleNavClick("home")}
               className={`transition-all py-1 cursor-pointer ${
@@ -285,8 +285,8 @@ export const Header: React.FC = () => {
             </button>
           </nav>
 
-          {/* Action Triggers & Theme / Sound Toggles */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5">
+          {/* Action Triggers & Responsive Toggles */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
             {/* Quick Camera Scan Trigger */}
             <button
               id="header-scan-food-btn"
@@ -294,47 +294,46 @@ export const Header: React.FC = () => {
                 soundFx.playScanRadar();
                 setIsScanModalOpen(true);
               }}
-              className="flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4.5 py-2 sm:py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full text-xs sm:text-sm font-bold shadow-md shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer whitespace-nowrap"
+              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full text-xs font-bold shadow-sm shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer whitespace-nowrap flex-shrink-0"
               title="Scan Food with Camera (Nutrimania AI)"
             >
-              <Camera className="w-4 h-4 text-white flex-shrink-0" />
-              <span className="hidden sm:inline">Scan Food</span>
-              <span className="sm:hidden">Scan</span>
+              <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white flex-shrink-0" />
+              <span className="hidden xs:inline sm:inline">Scan</span>
             </button>
 
-            {/* Ask Nutrimania AI button */}
+            {/* Ask Nutrimania AI button (shown on sm+) */}
             <button
               id="header-ask-ai-btn"
               onClick={() => {
                 soundFx.playPop();
                 setIsAskDrawerOpen(true);
               }}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/80 hover:bg-emerald-100 dark:hover:bg-emerald-900 active:scale-95 rounded-full border border-emerald-200 dark:border-emerald-800 transition-all cursor-pointer whitespace-nowrap"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 sm:py-2 text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/80 hover:bg-emerald-100 dark:hover:bg-emerald-900 active:scale-95 rounded-full border border-emerald-200 dark:border-emerald-800 transition-all cursor-pointer whitespace-nowrap flex-shrink-0"
               title="Ask Nutrimania AI"
             >
               <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
               <span>Ask AI</span>
             </button>
 
-            {/* Creator's Desk Trigger */}
+            {/* Creator's Desk Trigger (wide desktop only) */}
             <button
               id="header-creator-desk-btn"
               onClick={() => {
                 soundFx.playPop();
                 setIsCreatorsDeskOpen(true);
               }}
-              className="hidden xl:flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/80 hover:bg-amber-100 dark:hover:bg-amber-900 active:scale-95 rounded-full border border-amber-200 dark:border-amber-800/80 transition-all cursor-pointer whitespace-nowrap"
+              className="hidden 2xl:flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/80 hover:bg-amber-100 dark:hover:bg-amber-900 active:scale-95 rounded-full border border-amber-200 dark:border-amber-800/80 transition-all cursor-pointer whitespace-nowrap flex-shrink-0"
               title="Creator's Desk • Ansh Singh"
             >
               <User className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
               <span>Creator's Desk</span>
             </button>
 
-            {/* 🥦💀 Brainrot Mode Quick Toggle */}
+            {/* Brainrot Mode Quick Toggle (large desktop only) */}
             <button
               type="button"
               onClick={handleToggleBrainrot}
-              className={`hidden md:flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-full border transition-all cursor-pointer whitespace-nowrap active:scale-95 ${
+              className={`hidden xl:flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-full border transition-all cursor-pointer whitespace-nowrap active:scale-95 flex-shrink-0 ${
                 isBrainrotMode
                   ? "bg-purple-950/90 text-purple-200 border-purple-500/80 shadow-xs shadow-purple-500/20"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200"
@@ -342,14 +341,14 @@ export const Header: React.FC = () => {
               title={isBrainrotMode ? "Switch to Corporate Nutritionist Mode" : "Switch to Brainrot Edition 🥦💀"}
             >
               <Skull className={`w-3.5 h-3.5 ${isBrainrotMode ? "text-purple-400 animate-pulse" : "text-slate-400"}`} />
-              <span>{isBrainrotMode ? "Brainrot Active" : "Brainrot Mode"}</span>
+              <span>{isBrainrotMode ? "Brainrot Active" : "Brainrot"}</span>
             </button>
 
-            {/* Ambient Lo-Fi Audio Toggle */}
+            {/* Ambient Lo-Fi Audio Toggle (desktop only) */}
             <button
               type="button"
               onClick={handleToggleLoFi}
-              className={`p-2 sm:p-2.5 rounded-full transition-all border cursor-pointer flex items-center justify-center flex-shrink-0 relative ${
+              className={`hidden lg:flex p-2 rounded-full transition-all border cursor-pointer items-center justify-center flex-shrink-0 relative ${
                 isLoFiPlaying
                   ? "bg-amber-500 text-slate-950 border-amber-400 shadow-md shadow-amber-500/30 scale-105"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700"
@@ -359,19 +358,19 @@ export const Header: React.FC = () => {
             >
               {isLoFiPlaying ? (
                 <>
-                  <Headphones className="w-4 h-4 text-slate-950 animate-bounce" />
-                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping" />
+                  <Headphones className="w-3.5 h-3.5 text-slate-950 animate-bounce" />
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-400 rounded-full animate-ping" />
                 </>
               ) : (
-                <Headphones className="w-4 h-4" />
+                <Headphones className="w-3.5 h-3.5" />
               )}
             </button>
 
-            {/* Sound FX Mute/Unmute Toggle */}
+            {/* Sound FX Mute/Unmute Toggle (desktop only) */}
             <button
               type="button"
               onClick={handleToggleSound}
-              className={`p-2 sm:p-2.5 rounded-full transition-colors border cursor-pointer flex items-center justify-center flex-shrink-0 ${
+              className={`hidden lg:flex p-2 rounded-full transition-colors border cursor-pointer items-center justify-center flex-shrink-0 ${
                 !isMuted
                   ? "bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700"
@@ -379,7 +378,7 @@ export const Header: React.FC = () => {
               title={isMuted ? "Unmute Audio FX (Pop & Success chimes)" : "Mute Audio FX"}
               aria-label={isMuted ? "Unmute Sound" : "Mute Sound"}
             >
-              {!isMuted ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+              {!isMuted ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5 text-rose-400" />}
             </button>
 
             {/* Day / Night Theme Toggle */}
@@ -390,7 +389,7 @@ export const Header: React.FC = () => {
                 soundFx.playPop();
                 toggleDarkMode();
               }}
-              className="p-2 sm:p-2.5 text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 cursor-pointer flex items-center justify-center flex-shrink-0"
+              className="p-2 text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 cursor-pointer flex items-center justify-center flex-shrink-0"
               aria-label={isDarkMode ? "Switch to Day / Light Mode" : "Switch to Night / Dark Mode"}
               title={isDarkMode ? "Switch to Day (Light Mode)" : "Switch to Night (Dark Mode)"}
             >
@@ -401,13 +400,13 @@ export const Header: React.FC = () => {
               )}
             </button>
 
-            {/* Profile Avatar */}
+            {/* Profile Avatar (hidden on tiny screens < 380px) */}
             <div
               onClick={() => handleNavClick("dashboard")}
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-emerald-500 p-0.5 cursor-pointer hover:scale-105 transition-transform flex-shrink-0"
+              className="hidden sm:block w-8 h-8 sm:w-9 sm:h-9 rounded-full border-2 border-emerald-500 p-0.5 cursor-pointer hover:scale-105 transition-transform flex-shrink-0"
               title="My Health Dashboard"
             >
-              <div className="w-full h-full bg-emerald-600 text-white rounded-full flex items-center justify-center font-extrabold text-xs">
+              <div className="w-full h-full bg-emerald-600 text-white rounded-full flex items-center justify-center font-extrabold text-[11px]">
                 NM
               </div>
             </div>
@@ -419,7 +418,7 @@ export const Header: React.FC = () => {
                 soundFx.playPop();
                 setIsMobileMenuOpen((prev) => !prev);
               }}
-              className="lg:hidden p-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl cursor-pointer border border-slate-200 dark:border-slate-700"
+              className="lg:hidden p-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl cursor-pointer border border-slate-200 dark:border-slate-700 flex-shrink-0"
               aria-label="Toggle navigation menu"
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -445,6 +444,53 @@ export const Header: React.FC = () => {
               ⌘K
             </span>
           </button>
+
+          {/* Quick Audio & Environment Controls Strip for Mobile / Tablet */}
+          <div className="p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-850/80 border border-slate-200 dark:border-slate-800 grid grid-cols-3 gap-2 text-center text-xs">
+            {/* LoFi Audio Mobile Tile */}
+            <button
+              type="button"
+              onClick={handleToggleLoFi}
+              className={`p-2 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
+                isLoFiPlaying
+                  ? "bg-amber-500/15 border-amber-400/60 text-amber-600 dark:text-amber-400 font-bold"
+                  : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
+              }`}
+            >
+              <Headphones className={`w-4 h-4 ${isLoFiPlaying ? "animate-bounce text-amber-500" : ""}`} />
+              <span className="text-[10px] font-bold">{isLoFiPlaying ? "Lo-Fi ON" : "Lo-Fi Music"}</span>
+            </button>
+
+            {/* Sound FX Mobile Tile */}
+            <button
+              type="button"
+              onClick={handleToggleSound}
+              className={`p-2 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
+                !isMuted
+                  ? "bg-emerald-500/15 border-emerald-400/60 text-emerald-600 dark:text-emerald-400 font-bold"
+                  : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400"
+              }`}
+            >
+              {!isMuted ? <Volume2 className="w-4 h-4 text-emerald-500" /> : <VolumeX className="w-4 h-4 text-rose-400" />}
+              <span className="text-[10px] font-bold">{!isMuted ? "Sound ON" : "Muted"}</span>
+            </button>
+
+            {/* Brainrot Mode Mobile Tile */}
+            <button
+              type="button"
+              onClick={() => {
+                handleToggleBrainrot();
+              }}
+              className={`p-2 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
+                isBrainrotMode
+                  ? "bg-purple-500/20 border-purple-500/60 text-purple-400 font-bold"
+                  : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
+              }`}
+            >
+              <Skull className={`w-4 h-4 ${isBrainrotMode ? "text-purple-400 animate-pulse" : ""}`} />
+              <span className="text-[10px] font-bold">{isBrainrotMode ? "Brainrot ON" : "Brainrot"}</span>
+            </button>
+          </div>
 
           {/* Quick Scan Modes Grid */}
           <div className="grid grid-cols-4 gap-2 mb-3">

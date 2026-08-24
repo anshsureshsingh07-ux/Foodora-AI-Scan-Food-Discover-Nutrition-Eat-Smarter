@@ -275,20 +275,20 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({ food: propFood
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
               <button
                 onClick={() => {
                   soundFx.playPop();
                   if (isCompared) removeFromCompare(food.id);
                   else addToCompare(food);
                 }}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+                className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
                   isCompared
                     ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
                     : "border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                 }`}
               >
-                <Scale className="w-4 h-4" />
+                <Scale className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span>{isCompared ? "In Compare" : "Compare"}</span>
               </button>
 
@@ -297,29 +297,29 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({ food: propFood
                   soundFx.playPop();
                   toggleFavorite(food.id);
                 }}
-                className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
+                className={`p-2 sm:p-2.5 rounded-xl border transition-all cursor-pointer ${
                   isFav
                     ? "bg-rose-50 dark:bg-rose-950 border-rose-300 text-rose-600"
                     : "border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
                 }`}
                 title="Save to favorites"
               >
-                <Heart className={`w-4 h-4 ${isFav ? "fill-rose-500 text-rose-500" : ""}`} />
+                <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isFav ? "fill-rose-500 text-rose-500" : ""}`} />
               </button>
 
               <button
                 onClick={handleCopyNutritionMarkdown}
-                className="p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+                className="p-2 sm:p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
                 title="Copy Nutrition Facts Markdown"
               >
-                {isCopiedSuccess ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                {isCopiedSuccess ? <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500" /> : <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
               </button>
 
               <button
                 onClick={() => handleAskAboutThisFood()}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 hover:bg-emerald-200 dark:hover:bg-emerald-900 transition-all cursor-pointer"
+                className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-2 rounded-xl text-xs font-semibold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 hover:bg-emerald-200 dark:hover:bg-emerald-900 transition-all cursor-pointer"
               >
-                <MessageSquare className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>Ask AI</span>
               </button>
             </div>

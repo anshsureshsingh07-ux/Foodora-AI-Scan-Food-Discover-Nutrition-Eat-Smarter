@@ -9,12 +9,63 @@
   }
   
   body {
-    @apply bg-slate-50 text-slate-900 antialiased selection:bg-emerald-500 selection:text-white transition-colors duration-200 min-h-screen;
+    @apply bg-slate-50 text-slate-900 antialiased selection:bg-emerald-500 selection:text-white transition-colors duration-200 min-h-screen overflow-x-hidden;
   }
 
   html.dark body {
     @apply bg-slate-950 text-slate-100;
   }
+}
+
+/* Glassmorphic Core Archetype Utilities */
+.glass-surface {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+}
+
+.dark .glass-surface {
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-card-ultra {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+}
+
+.dark .glass-card-ultra {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translate3d(0, 0, 0);
+  will-change: transform, backdrop-filter;
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
 }
 
 /* Custom Scrollbar for smooth theme compliance */
@@ -39,3 +90,4 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(100, 116, 139, 0.7);
 }
+

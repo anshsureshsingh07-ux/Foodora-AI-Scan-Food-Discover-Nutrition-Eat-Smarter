@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { useFood } from "../../context/FoodContext";
 import { FoodCard } from "../food/FoodCard";
 import { SAMPLE_ANIME_STORIES } from "../../data/foodDatabase";
+import { GlassTiltCard } from "../common/GlassTiltCard";
+import { ParallaxSection } from "../common/ParallaxSection";
+import { Interactive3DRamenBowl } from "./Interactive3DRamenBowl";
 import {
   Camera,
   Search,
@@ -37,6 +40,7 @@ export const HomeView: React.FC = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [loggedDemo, setLoggedDemo] = useState(false);
+  const [heroViewMode, setHeroViewMode] = useState<"ramen" | "scanner">("ramen");
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,181 +116,239 @@ export const HomeView: React.FC = () => {
                 </button>
               </form>
 
-              {/* 4 Primary Action Cards Grid (Sleek Theme Matrix) */}
+              {/* 4 Primary Action Cards Grid (3D Glassmorphic Matrix) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* 1. Scan Food */}
                 <button
                   id="action-card-scan-food"
                   onClick={() => setIsScanModalOpen(true)}
-                  className="group flex flex-col items-start p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-100/60 dark:hover:shadow-none transition-all text-left cursor-pointer"
+                  className="group relative flex flex-col items-start p-6 backdrop-blur-xl bg-white/70 dark:bg-slate-900/60 border border-white/50 dark:border-white/10 rounded-3xl shadow-lg shadow-slate-900/5 dark:shadow-black/20 hover:border-emerald-500/60 hover:shadow-2xl hover:shadow-emerald-500/10 hover:-translate-y-1 transition-all duration-300 text-left cursor-pointer overflow-hidden"
                 >
-                  <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/60 rounded-2xl flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-4 group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                  <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-400/50 to-transparent" />
+                  <div className="w-12 h-12 bg-emerald-50/90 dark:bg-emerald-950/60 rounded-2xl flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-4 group-hover:bg-emerald-600 group-hover:text-white transition-all shadow-xs">
                     <Camera className="w-6 h-6" />
                   </div>
-                  <span className="text-lg font-bold text-slate-900 dark:text-white">Scan Food</span>
-                  <span className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Identify visible dishes instantly</span>
+                  <span className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                    Scan Food
+                  </span>
+                  <span className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                    Identify visible dishes instantly
+                  </span>
                 </button>
 
                 {/* 2. Scan Barcode */}
                 <button
                   id="action-card-scan-barcode"
                   onClick={() => setIsBarcodeModalOpen(true)}
-                  className="group flex flex-col items-start p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-100/60 dark:hover:shadow-none transition-all text-left cursor-pointer"
+                  className="group relative flex flex-col items-start p-6 backdrop-blur-xl bg-white/70 dark:bg-slate-900/60 border border-white/50 dark:border-white/10 rounded-3xl shadow-lg shadow-slate-900/5 dark:shadow-black/20 hover:border-sky-500/60 hover:shadow-2xl hover:shadow-sky-500/10 hover:-translate-y-1 transition-all duration-300 text-left cursor-pointer overflow-hidden"
                 >
-                  <div className="w-12 h-12 bg-sky-50 dark:bg-sky-950/60 rounded-2xl flex items-center justify-center text-sky-600 dark:text-sky-400 mb-4 group-hover:bg-sky-600 group-hover:text-white transition-all">
+                  <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-sky-400/50 to-transparent" />
+                  <div className="w-12 h-12 bg-sky-50/90 dark:bg-sky-950/60 rounded-2xl flex items-center justify-center text-sky-600 dark:text-sky-400 mb-4 group-hover:bg-sky-600 group-hover:text-white transition-all shadow-xs">
                     <Barcode className="w-6 h-6" />
                   </div>
-                  <span className="text-lg font-bold text-slate-900 dark:text-white">Scan Barcode</span>
-                  <span className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Analyze packaged food intelligence</span>
+                  <span className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
+                    Scan Barcode
+                  </span>
+                  <span className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                    Analyze packaged food intelligence
+                  </span>
                 </button>
 
                 {/* 3. Scan Label */}
                 <button
                   id="action-card-scan-label"
                   onClick={() => setIsLabelModalOpen(true)}
-                  className="group flex flex-col items-start p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-100/60 dark:hover:shadow-none transition-all text-left cursor-pointer"
+                  className="group relative flex flex-col items-start p-6 backdrop-blur-xl bg-white/70 dark:bg-slate-900/60 border border-white/50 dark:border-white/10 rounded-3xl shadow-lg shadow-slate-900/5 dark:shadow-black/20 hover:border-amber-500/60 hover:shadow-2xl hover:shadow-amber-500/10 hover:-translate-y-1 transition-all duration-300 text-left cursor-pointer overflow-hidden"
                 >
-                  <div className="w-12 h-12 bg-amber-50 dark:bg-amber-950/60 rounded-2xl flex items-center justify-center text-amber-600 dark:text-amber-400 mb-4 group-hover:bg-amber-600 group-hover:text-white transition-all">
+                  <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-400/50 to-transparent" />
+                  <div className="w-12 h-12 bg-amber-50/90 dark:bg-amber-950/60 rounded-2xl flex items-center justify-center text-amber-600 dark:text-amber-400 mb-4 group-hover:bg-amber-600 group-hover:text-white transition-all shadow-xs">
                     <Tag className="w-6 h-6" />
                   </div>
-                  <span className="text-lg font-bold text-slate-900 dark:text-white">Scan Label</span>
-                  <span className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">OCR for ingredient breakdown</span>
+                  <span className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                    Scan Label
+                  </span>
+                  <span className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                    OCR for ingredient breakdown
+                  </span>
                 </button>
 
                 {/* 4. Search Database / Meal Decomposition */}
                 <button
                   id="action-card-database"
                   onClick={() => setCurrentView("database")}
-                  className="group flex flex-col items-start p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-100/60 dark:hover:shadow-none transition-all text-left cursor-pointer"
+                  className="group relative flex flex-col items-start p-6 backdrop-blur-xl bg-white/70 dark:bg-slate-900/60 border border-white/50 dark:border-white/10 rounded-3xl shadow-lg shadow-slate-900/5 dark:shadow-black/20 hover:border-indigo-500/60 hover:shadow-2xl hover:shadow-indigo-500/10 hover:-translate-y-1 transition-all duration-300 text-left cursor-pointer overflow-hidden"
                 >
-                  <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-950/60 rounded-2xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                  <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-indigo-400/50 to-transparent" />
+                  <div className="w-12 h-12 bg-indigo-50/90 dark:bg-indigo-950/60 rounded-2xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-xs">
                     <Search className="w-6 h-6" />
                   </div>
-                  <span className="text-lg font-bold text-slate-900 dark:text-white">Search Database</span>
-                  <span className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Browse 2.5M+ global food items</span>
+                  <span className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                    Search Database
+                  </span>
+                  <span className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                    Browse 2.5M+ global food items
+                  </span>
                 </button>
               </div>
             </div>
 
-            {/* Right Side: Sleek Dark Intelligence Card + Database Coverage Card */}
-            <div className="w-full lg:w-2/5 flex flex-col gap-6">
-              {/* Dark Intelligence Analysis Card */}
-              <div className="bg-slate-900 rounded-[32px] p-6 sm:p-7 text-white shadow-2xl flex flex-col justify-between border border-slate-800">
-                <div>
-                  <div className="flex justify-between items-start mb-6">
-                    <div>
-                      <span className="text-xs font-bold uppercase tracking-widest text-emerald-400 block mb-1">
-                        Latest Analysis
-                      </span>
-                      <h3 className="text-xl font-bold text-white">Avocado Smash Bowl</h3>
-                    </div>
-                    <div className="bg-emerald-500/20 px-3 py-1 rounded-full border border-emerald-500/30 text-emerald-400 text-xs font-bold">
-                      94% Confidence
-                    </div>
-                  </div>
-
-                  {/* Circular Health Score Ring & Macro Bars */}
-                  <div className="flex items-center gap-6 mb-7">
-                    <div className="relative w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center flex-shrink-0">
-                      <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
-                        <circle
-                          cx="50"
-                          cy="50"
-                          r="42"
-                          stroke="currentColor"
-                          strokeWidth="8"
-                          className="text-slate-800"
-                          fill="transparent"
-                        />
-                        <circle
-                          cx="50"
-                          cy="50"
-                          r="42"
-                          stroke="currentColor"
-                          strokeWidth="8"
-                          className="text-emerald-500"
-                          fill="transparent"
-                          strokeDasharray="264"
-                          strokeDashoffset="48"
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                      <div className="flex flex-col items-center leading-none text-center">
-                        <span className="text-3xl font-black text-white">82</span>
-                        <span className="text-[10px] uppercase font-bold text-slate-400 mt-1">Health Score</span>
-                      </div>
-                    </div>
-
-                    <div className="flex-grow space-y-3">
-                      <div>
-                        <div className="flex justify-between items-end mb-1">
-                          <span className="text-xs text-slate-400 font-medium">Protein</span>
-                          <span className="text-xs font-bold text-white">12g</span>
-                        </div>
-                        <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                          <div className="h-full bg-emerald-500 w-[65%] rounded-full"></div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="flex justify-between items-end mb-1">
-                          <span className="text-xs text-slate-400 font-medium">Carbs</span>
-                          <span className="text-xs font-bold text-white">34g</span>
-                        </div>
-                        <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                          <div className="h-full bg-amber-400 w-[45%] rounded-full"></div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="flex justify-between items-end mb-1">
-                          <span className="text-xs text-slate-400 font-medium">Healthy Fats</span>
-                          <span className="text-xs font-bold text-white">21g</span>
-                        </div>
-                        <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                          <div className="h-full bg-sky-400 w-[80%] rounded-full"></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Ask Nutrimania AI Assistant Box */}
-                  <div
-                    onClick={() => setIsAskDrawerOpen(true)}
-                    className="bg-slate-800/90 hover:bg-slate-800 rounded-2xl p-4 border border-slate-700/80 cursor-pointer transition-all mb-6"
-                  >
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></div>
-                      <span className="text-xs font-bold uppercase text-slate-300">Ask Nutrimania AI</span>
-                    </div>
-                    <p className="text-xs sm:text-sm text-slate-300 italic">
-                      "This dish provides 35% of your daily recommended fiber and heart-healthy oleic acid. Would you like a breakdown of the seed variety detected?"
-                    </p>
-                  </div>
-                </div>
-
-                {/* Log Meal & Action Buttons */}
-                <div className="flex gap-2.5">
-                  <button
-                    onClick={handleDemoLogMeal}
-                    className="flex-1 h-12 bg-emerald-600 hover:bg-emerald-500 active:scale-98 rounded-xl flex items-center justify-center font-bold text-sm text-white transition-all shadow-md cursor-pointer"
-                  >
-                    {loggedDemo ? "Logged to Diary! ✓" : "Log Meal"}
-                  </button>
-                  <button
-                    onClick={() => setCurrentView("meal-analyzer")}
-                    className="w-12 h-12 bg-slate-800 hover:bg-slate-700 active:scale-98 rounded-xl flex items-center justify-center text-slate-300 transition-all border border-slate-700 cursor-pointer"
-                    title="Open Meal Analyzer"
-                  >
-                    <Layers className="w-5 h-5 text-emerald-400" />
-                  </button>
-                </div>
+            {/* Right Side: 3D Interactive Ramen Bowl or Intelligence Analysis Card */}
+            <div className="w-full lg:w-2/5 flex flex-col gap-4">
+              {/* Interactive Mode Switcher Pill */}
+              <div className="flex items-center justify-between p-1.5 backdrop-blur-xl bg-white/70 dark:bg-slate-900/60 rounded-2xl border border-white/50 dark:border-white/10 shadow-sm">
+                <button
+                  id="hero-toggle-3d-ramen"
+                  onClick={() => setHeroViewMode("ramen")}
+                  className={`flex-1 py-2 px-3 rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                    heroViewMode === "ramen"
+                      ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  }`}
+                >
+                  <span>🍜 3D Interactive Ramen</span>
+                  <span className="hidden sm:inline-block px-1.5 py-0.5 rounded-md text-[9px] bg-white/20 text-white font-black uppercase">
+                    Live
+                  </span>
+                </button>
+                <button
+                  id="hero-toggle-scanner"
+                  onClick={() => setHeroViewMode("scanner")}
+                  className={`flex-1 py-2 px-3 rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                    heroViewMode === "scanner"
+                      ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  }`}
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Instant Analysis</span>
+                </button>
               </div>
 
-              {/* Sleek Global Coverage Card */}
-              <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-xs">
+              {heroViewMode === "ramen" ? (
+                <Interactive3DRamenBowl />
+              ) : (
+                /* Dark Frosted Glass Intelligence Analysis Card with Motion Spring Tilt */
+                <GlassTiltCard className="!p-0 !border-0 !shadow-none !bg-transparent">
+                  <div className="relative backdrop-blur-2xl bg-slate-900/85 rounded-[32px] p-6 sm:p-7 text-white shadow-2xl flex flex-col justify-between border border-white/15 overflow-hidden h-full">
+                    <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-400/60 to-transparent" />
+                    <div className="pointer-events-none absolute -right-20 -top-20 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl" />
+                    <div>
+                      <div className="flex justify-between items-start mb-6">
+                        <div>
+                          <span className="text-xs font-bold uppercase tracking-widest text-emerald-400 block mb-1">
+                            Latest Analysis
+                          </span>
+                          <h3 className="text-xl font-bold text-white">Avocado Smash Bowl</h3>
+                        </div>
+                        <div className="bg-emerald-500/20 backdrop-blur-md px-3 py-1 rounded-full border border-emerald-500/30 text-emerald-400 text-xs font-bold">
+                          94% Confidence
+                        </div>
+                      </div>
+
+                      {/* Circular Health Score Ring & Macro Bars */}
+                      <div className="flex items-center gap-6 mb-7">
+                        <div className="relative w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center flex-shrink-0">
+                          <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 100 100">
+                            <circle
+                              cx="50"
+                              cy="50"
+                              r="42"
+                              stroke="currentColor"
+                              strokeWidth="8"
+                              className="text-slate-800/80"
+                              fill="transparent"
+                            />
+                            <circle
+                              cx="50"
+                              cy="50"
+                              r="42"
+                              stroke="currentColor"
+                              strokeWidth="8"
+                              className="text-emerald-500"
+                              fill="transparent"
+                              strokeDasharray="264"
+                              strokeDashoffset="48"
+                              strokeLinecap="round"
+                            />
+                          </svg>
+                          <div className="flex flex-col items-center leading-none text-center">
+                            <span className="text-3xl font-black text-white">82</span>
+                            <span className="text-[10px] uppercase font-bold text-slate-400 mt-1">Health Score</span>
+                          </div>
+                        </div>
+
+                        <div className="flex-grow space-y-3">
+                          <div>
+                            <div className="flex justify-between items-end mb-1">
+                              <span className="text-xs text-slate-400 font-medium">Protein</span>
+                              <span className="text-xs font-bold text-white">12g</span>
+                            </div>
+                            <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                              <div className="h-full bg-emerald-500 w-[65%] rounded-full"></div>
+                            </div>
+                          </div>
+
+                          <div>
+                            <div className="flex justify-between items-end mb-1">
+                              <span className="text-xs text-slate-400 font-medium">Carbs</span>
+                              <span className="text-xs font-bold text-white">34g</span>
+                            </div>
+                            <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                              <div className="h-full bg-amber-400 w-[45%] rounded-full"></div>
+                            </div>
+                          </div>
+
+                          <div>
+                            <div className="flex justify-between items-end mb-1">
+                              <span className="text-xs text-slate-400 font-medium">Healthy Fats</span>
+                              <span className="text-xs font-bold text-white">21g</span>
+                            </div>
+                            <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                              <div className="h-full bg-sky-400 w-[80%] rounded-full"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Ask Nutrimania AI Assistant Box */}
+                      <div
+                        onClick={() => setIsAskDrawerOpen(true)}
+                        className="backdrop-blur-md bg-slate-800/80 hover:bg-slate-800 rounded-2xl p-4 border border-white/10 cursor-pointer transition-all mb-6"
+                      >
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></div>
+                          <span className="text-xs font-bold uppercase text-slate-300">Ask Nutrimania AI</span>
+                        </div>
+                        <p className="text-xs sm:text-sm text-slate-300 italic">
+                          "This dish provides 35% of your daily recommended fiber and heart-healthy oleic acid. Would you like a breakdown of the seed variety detected?"
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Log Meal & Action Buttons */}
+                    <div className="flex gap-2.5">
+                      <button
+                        onClick={handleDemoLogMeal}
+                        className="flex-1 h-12 bg-emerald-600 hover:bg-emerald-500 active:scale-98 rounded-xl flex items-center justify-center font-bold text-sm text-white transition-all shadow-md cursor-pointer"
+                      >
+                        {loggedDemo ? "Logged to Diary! ✓" : "Log Meal"}
+                      </button>
+                      <button
+                        onClick={() => setCurrentView("meal-analyzer")}
+                        className="w-12 h-12 bg-slate-800/90 hover:bg-slate-700 active:scale-98 rounded-xl flex items-center justify-center text-slate-300 transition-all border border-slate-700 cursor-pointer"
+                        title="Open Meal Analyzer"
+                      >
+                        <Layers className="w-5 h-5 text-emerald-400" />
+                      </button>
+                    </div>
+                  </div>
+                </GlassTiltCard>
+              )}
+
+              {/* Sleek Global Coverage Glass Card */}
+              <div className="backdrop-blur-xl bg-white/70 dark:bg-slate-900/60 rounded-3xl p-5 border border-white/50 dark:border-white/10 flex items-center justify-between shadow-lg shadow-slate-900/5 dark:shadow-black/20">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                     <Globe className="w-6 h-6" />
                   </div>
                   <div>
@@ -336,7 +398,7 @@ export const HomeView: React.FC = () => {
       </section>
 
       {/* 2.5 AI RECIPE GENERATOR FEATURE SPOTLIGHT */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
+      <ParallaxSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
         <div className="relative overflow-hidden bg-gradient-to-br from-emerald-900 via-slate-900 to-slate-950 border border-emerald-500/30 rounded-3xl p-6 sm:p-10 text-white shadow-2xl">
           <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
             <div className="space-y-3 max-w-2xl">
@@ -394,7 +456,7 @@ export const HomeView: React.FC = () => {
           {/* Decorative Subtle Background Glow */}
           <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
         </div>
-      </section>
+      </ParallaxSection>
 
       {/* 3. FOUNDER & CREATOR FEATURED SHOWCASE */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
