@@ -15,8 +15,105 @@ import {
   ShieldCheck,
   ChevronRight,
   Flame,
+  Clock,
+  Timer,
+  Hourglass,
+  Calendar,
 } from "lucide-react";
 import { soundFx } from "../../utils/soundEffects";
+
+// Event Timeline Configuration (August 24 to August 31, 2026, 23:59:59)
+export const RAMEN_WEEK_START = new Date("2026-08-24T00:00:00").getTime();
+export const RAMEN_WEEK_END = new Date("2026-08-31T23:59:59").getTime();
+
+export interface TimeLeft {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+  totalSeconds: number;
+  isEnded: boolean;
+  progressPercent: number;
+}
+
+export function useRamenWeekCountdown(): TimeLeft {
+  const calculateTime = (): TimeLeft => {
+    const now = Date.now();
+    const diff = RAMEN_WEEK_END - now;
+
+    if (diff <= 0) {
+      return {
+        days: 0,
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
+        totalSeconds: 0,
+        isEnded: true,
+        progressPercent: 100,
+      };
+    }
+
+    const totalSeconds = Math.floor(diff / 1000);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    const totalDuration = RAMEN_WEEK_END - RAMEN_WEEK_START;
+    const elapsed = Math.max(0, now - RAMEN_WEEK_START);
+    const progressPercent = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
+
+    return {
+      days,
+      hours,
+      minutes,
+      seconds,
+      totalSeconds,
+      isEnded: false,
+      progressPercent,
+    };
+  };
+
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>(calculateTime);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTime());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  return timeLeft;
+}
+
+// Compact Real-Time Countdown Badge
+export const CompactRamenCountdown: React.FC<{ className?: string }> = ({ className = "" }) => {
+  const { days, hours, minutes, seconds, isEnded } = useRamenWeekCountdown();
+
+  if (isEnded) {
+    return (
+      <span className={`inline-flex items-center gap-1 font-mono font-bold text-amber-200 ${className}`}>
+        <Hourglass className="w-3 h-3 text-amber-400" />
+        <span>Event Concluded</span>
+      </span>
+    );
+  }
+
+  const pad = (n: number) => String(n).padStart(2, "0");
+
+  return (
+    <span className={`inline-flex items-center gap-1.5 font-mono font-bold ${className}`}>
+      <Timer className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
+      <span className="text-amber-200">
+        <span className="text-white font-black">{days}</span>d{" "}
+        <span className="text-white font-black">{pad(hours)}</span>h{" "}
+        <span className="text-white font-black">{pad(minutes)}</span>m{" "}
+        <span className="text-amber-300 font-black">{pad(seconds)}</span>s
+      </span>
+    </span>
+  );
+};
 
 interface RobotConfirmationModalProps {
   isOpen: boolean;
@@ -173,6 +270,9 @@ export const RobotConfirmationModal: React.FC<RobotConfirmationModalProps> = ({
               <span>🍜</span>
               <span>Ramen Week Special Event • Aug 24 - 31, 2026</span>
             </span>
+            <div className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full bg-black/20 text-[11px]">
+              <CompactRamenCountdown />
+            </div>
           </div>
 
           <h2 className="text-2xl sm:text-3xl font-black tracking-tight flex items-center gap-2.5">
@@ -484,6 +584,7 @@ export const RamenWeekBanner: React.FC<{
   onOpenRobotVerification: () => void;
 }> = ({ onOpenRobotVerification }) => {
   const [isVerified, setIsVerified] = useState(false);
+  const { days, hours, minutes, seconds, isEnded, progressPercent } = useRamenWeekCountdown();
 
   useEffect(() => {
     try {
@@ -491,6 +592,8 @@ export const RamenWeekBanner: React.FC<{
       setIsVerified(verified);
     } catch {}
   }, []);
+
+  const pad = (n: number) => String(n).padStart(2, "0");
 
   return (
     <div
@@ -503,7 +606,7 @@ export const RamenWeekBanner: React.FC<{
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/60 to-transparent" />
 
       <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-        <div className="space-y-3 max-w-2xl">
+        <div className="space-y-4 max-w-2xl">
           {/* Top Event Date Pill */}
           <div className="flex flex-wrap items-center gap-2">
             <span className="px-3 py-1 rounded-full bg-white/20 dark:bg-amber-900/60 backdrop-blur-md text-white dark:text-amber-200 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 border border-white/20">
@@ -532,6 +635,84 @@ export const RamenWeekBanner: React.FC<{
           <p className="text-xs sm:text-sm text-amber-100/90 dark:text-amber-200/80 leading-relaxed">
             Immerse yourself in authentic Japanese broth chemistry, 3D interactive physics, and nutritional science. Complete the anti-bot check and tell us how you discovered Nutrimania to claim your official explorer pass!
           </p>
+
+          {/* REALTIME EVENT END COUNTDOWN BOXES */}
+          <div className="p-4 rounded-2xl bg-black/25 backdrop-blur-md border border-white/15">
+            <div className="flex items-center justify-between gap-2 mb-2.5">
+              <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-amber-200">
+                <Timer className="w-4 h-4 text-amber-300 animate-pulse" />
+                <span>Event Closes In (Real-time):</span>
+              </div>
+              <div className="text-[11px] font-mono font-bold text-amber-300/90 flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block" />
+                <span>Live Countdown</span>
+              </div>
+            </div>
+
+            {isEnded ? (
+              <div className="py-2 text-center text-sm font-bold text-amber-200 font-mono">
+                🎉 Global Ramen Week 2026 has concluded! Thank you for participating.
+              </div>
+            ) : (
+              <div className="grid grid-cols-4 gap-2 sm:gap-3 text-center">
+                {/* Days */}
+                <div className="p-2.5 sm:p-3 rounded-xl bg-white/10 dark:bg-black/40 border border-white/20 backdrop-blur-sm shadow-inner">
+                  <div className="text-xl sm:text-2xl lg:text-3xl font-mono font-black text-white tracking-tight leading-none">
+                    {pad(days)}
+                  </div>
+                  <div className="text-[10px] sm:text-[11px] font-bold text-amber-200 uppercase tracking-widest mt-1">
+                    Days
+                  </div>
+                </div>
+
+                {/* Hours */}
+                <div className="p-2.5 sm:p-3 rounded-xl bg-white/10 dark:bg-black/40 border border-white/20 backdrop-blur-sm shadow-inner">
+                  <div className="text-xl sm:text-2xl lg:text-3xl font-mono font-black text-white tracking-tight leading-none">
+                    {pad(hours)}
+                  </div>
+                  <div className="text-[10px] sm:text-[11px] font-bold text-amber-200 uppercase tracking-widest mt-1">
+                    Hours
+                  </div>
+                </div>
+
+                {/* Minutes */}
+                <div className="p-2.5 sm:p-3 rounded-xl bg-white/10 dark:bg-black/40 border border-white/20 backdrop-blur-sm shadow-inner">
+                  <div className="text-xl sm:text-2xl lg:text-3xl font-mono font-black text-white tracking-tight leading-none">
+                    {pad(minutes)}
+                  </div>
+                  <div className="text-[10px] sm:text-[11px] font-bold text-amber-200 uppercase tracking-widest mt-1">
+                    Mins
+                  </div>
+                </div>
+
+                {/* Seconds */}
+                <div className="p-2.5 sm:p-3 rounded-xl bg-amber-500/30 dark:bg-amber-600/30 border border-amber-400/50 backdrop-blur-sm shadow-inner relative overflow-hidden">
+                  <div className="text-xl sm:text-2xl lg:text-3xl font-mono font-black text-amber-200 tracking-tight leading-none">
+                    {pad(seconds)}
+                  </div>
+                  <div className="text-[10px] sm:text-[11px] font-bold text-amber-200 uppercase tracking-widest mt-1">
+                    Secs
+                  </div>
+                  <div className="absolute inset-x-0 bottom-0 h-0.5 bg-amber-300 animate-pulse" />
+                </div>
+              </div>
+            )}
+
+            {/* Timeline Progress Bar */}
+            <div className="mt-3">
+              <div className="flex justify-between text-[10px] font-mono text-amber-200/90 mb-1">
+                <span>Aug 24 (Start)</span>
+                <span>{progressPercent.toFixed(1)}% Completed</span>
+                <span>Aug 31, 23:59 (End)</span>
+              </div>
+              <div className="h-1.5 w-full bg-black/40 rounded-full overflow-hidden p-0.5 border border-white/10">
+                <div
+                  className="h-full bg-gradient-to-r from-amber-400 via-emerald-400 to-amber-300 rounded-full transition-all duration-1000"
+                  style={{ width: `${Math.max(2, progressPercent)}%` }}
+                />
+              </div>
+            </div>
+          </div>
 
           {/* Quick Features Highlight Tags */}
           <div className="flex flex-wrap items-center gap-2 pt-1">

@@ -3,7 +3,7 @@ import { useFood } from "../../context/FoodContext";
 import { soundFx } from "../../utils/soundEffects";
 import { CommandPaletteModal } from "./CommandPaletteModal";
 import { CreatorsDeskModal } from "./CreatorsDeskModal";
-import { RobotConfirmationModal } from "../home/RamenWeekBanner";
+import { RobotConfirmationModal, CompactRamenCountdown } from "../home/RamenWeekBanner";
 import {
   Camera,
   Search,
@@ -135,15 +135,23 @@ export const Header: React.FC = () => {
             <span className="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-white font-bold text-xs">
               🍜
             </span>
-            <p className="text-[11px] sm:text-xs font-medium truncate">
-              <strong className="font-black uppercase tracking-wider bg-white/25 dark:bg-amber-900/80 px-2 py-0.5 rounded text-[10px] mr-1.5 shadow-xs">
+            <div className="flex items-center gap-2 truncate">
+              <strong className="font-black uppercase tracking-wider bg-white/25 dark:bg-amber-900/80 px-2 py-0.5 rounded text-[10px] shadow-xs">
                 Ramen Week: 24 to 31 August
               </strong>
-              <span>Explore 3D Artisanal Broths & verify you're human to claim your Explorer Pass!</span>
-            </p>
+              <span className="hidden md:inline text-[11px] sm:text-xs font-medium text-amber-100 truncate">
+                Explore 3D Artisanal Broths & verify you're human!
+              </span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-3 flex-shrink-0">
+            {/* Real-time Countdown Timer Badge in Header */}
+            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-black/25 border border-white/15 text-[11px]">
+              <span className="text-amber-300 font-bold">Ends in:</span>
+              <CompactRamenCountdown />
+            </div>
+
             <button
               type="button"
               onClick={() => {
