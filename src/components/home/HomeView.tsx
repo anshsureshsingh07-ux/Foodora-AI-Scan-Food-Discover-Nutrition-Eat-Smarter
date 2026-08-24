@@ -5,6 +5,7 @@ import { SAMPLE_ANIME_STORIES } from "../../data/foodDatabase";
 import { GlassTiltCard } from "../common/GlassTiltCard";
 import { ParallaxSection } from "../common/ParallaxSection";
 import { Interactive3DRamenBowl } from "./Interactive3DRamenBowl";
+import { RamenWeekBanner, RobotConfirmationModal } from "./RamenWeekBanner";
 import {
   Camera,
   Search,
@@ -41,6 +42,7 @@ export const HomeView: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [loggedDemo, setLoggedDemo] = useState(false);
   const [heroViewMode, setHeroViewMode] = useState<"ramen" | "scanner">("ramen");
+  const [isRobotModalOpen, setIsRobotModalOpen] = useState(false);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,9 +74,24 @@ export const HomeView: React.FC = () => {
   const featuredSuperfoods = foodDatabase.slice(0, 4);
 
   return (
-    <div className="space-y-12 sm:space-y-16 pb-16">
+    <div className="space-y-10 sm:space-y-14 pb-16">
+      {/* Robot Confirmation & Discovery Survey Modal */}
+      <RobotConfirmationModal
+        isOpen={isRobotModalOpen}
+        onClose={() => setIsRobotModalOpen(false)}
+      />
+
+      {/* 0. RAMEN WEEK (24 TO 31 AUGUST 2026) EVENT SPOTLIGHT BANNER */}
+      <section className="pt-4 sm:pt-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
+          <RamenWeekBanner
+            onOpenRobotVerification={() => setIsRobotModalOpen(true)}
+          />
+        </div>
+      </section>
+
       {/* 1. SLEEK HERO SECTION WITH SPLIT INTELLIGENCE CARD */}
-      <section className="pt-6 sm:pt-10 pb-6">
+      <section className="pb-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
           <div className="flex flex-col lg:flex-row gap-8 lg:gap-10 items-stretch">
             

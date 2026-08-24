@@ -3,6 +3,7 @@ import { useFood } from "../../context/FoodContext";
 import { soundFx } from "../../utils/soundEffects";
 import { CommandPaletteModal } from "./CommandPaletteModal";
 import { CreatorsDeskModal } from "./CreatorsDeskModal";
+import { RobotConfirmationModal } from "../home/RamenWeekBanner";
 import {
   Camera,
   Search,
@@ -59,6 +60,7 @@ export const Header: React.FC = () => {
   const [isDevNoticeExpanded, setIsDevNoticeExpanded] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isCreatorsDeskOpen, setIsCreatorsDeskOpen] = useState(false);
+  const [isRobotModalOpen, setIsRobotModalOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(() => soundFx.getIsMuted());
   const [isLoFiPlaying, setIsLoFiPlaying] = useState(() => soundFx.getIsLoFiPlaying());
 
@@ -117,6 +119,45 @@ export const Header: React.FC = () => {
         isOpen={isCreatorsDeskOpen}
         onClose={() => setIsCreatorsDeskOpen(false)}
       />
+
+      <RobotConfirmationModal
+        isOpen={isRobotModalOpen}
+        onClose={() => setIsRobotModalOpen(false)}
+      />
+
+      {/* 0. Special Global Ramen Week (24 to 31 August 2026) Celebration Banner */}
+      <div
+        id="ramen-week-top-bar"
+        className="w-full bg-gradient-to-r from-amber-600 via-orange-600 to-rose-600 dark:from-amber-950 dark:via-orange-950 dark:to-rose-950 text-white text-xs px-3 sm:px-6 py-2 border-b border-amber-500/30 flex items-center justify-between gap-2 shadow-xs select-none"
+      >
+        <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-white font-bold text-xs">
+              🍜
+            </span>
+            <p className="text-[11px] sm:text-xs font-medium truncate">
+              <strong className="font-black uppercase tracking-wider bg-white/25 dark:bg-amber-900/80 px-2 py-0.5 rounded text-[10px] mr-1.5 shadow-xs">
+                Ramen Week: 24 to 31 August
+              </strong>
+              <span>Explore 3D Artisanal Broths & verify you're human to claim your Explorer Pass!</span>
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                soundFx.playPop();
+                setIsRobotModalOpen(true);
+              }}
+              className="px-2.5 py-1 rounded-full bg-white/90 hover:bg-white text-amber-950 font-black text-[11px] flex items-center gap-1 shadow-sm transition-all cursor-pointer whitespace-nowrap active:scale-95"
+            >
+              <Cpu className="w-3 h-3 text-amber-600" />
+              <span>Robot Check & Survey</span>
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* 1. Real-time Under Active Development Notice Bar */}
       {!isDevNoticeDismissed && (
