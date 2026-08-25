@@ -1,4 +1,5 @@
 import React from "react";
+import { Analytics } from "@vercel/analytics/react";
 import { FoodProvider, useFood } from "./context/FoodContext";
 import { Header } from "./components/common/Header";
 import { Footer } from "./components/common/Footer";
@@ -96,6 +97,9 @@ const MainContent: React.FC = () => {
       <LabelScannerModal />
       <AskFoodoraDrawer />
       <CompareFloatingBar />
+
+      {/* Vercel Web Analytics */}
+      <Analytics />
     </div>
   );
 };
